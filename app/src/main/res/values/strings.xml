@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="api_error">Error while fetching data</string>
+
+    <!-- Content descriptions for accessibility -->
+    <string name="content_desc_movie_poster">Movie poster</string>
+</resources>
