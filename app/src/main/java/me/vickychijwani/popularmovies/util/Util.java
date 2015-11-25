@@ -4,7 +4,10 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.WindowManager;
+
+import me.vickychijwani.popularmovies.BuildConfig;
 
 public class Util {
 
@@ -24,6 +27,10 @@ public class Util {
 
     public static String buildPosterUrl(String posterPath, int posterWidth) {
         TMDbPosterWidth tmdbPosterWidth = computeNextLowestPosterWidth(posterWidth);
+        if (BuildConfig.DEBUG) {
+            Log.d("Picasso", "Loading poster of size " + tmdbPosterWidth.maxWidth + "x"
+                    + (tmdbPosterWidth.maxWidth * 277.0 / 185.0));
+        }
         String relativePath = tmdbPosterWidth.getWidthString() + "/" + posterPath;
         return Uri.withAppendedPath(TMDB_IMAGE_BASE_URI, relativePath).toString();
     }
@@ -31,7 +38,7 @@ public class Util {
     // 50 => W92, 92 => W92, 93 => W185, 999 => ORIGINAL
     private static TMDbPosterWidth computeNextLowestPosterWidth(int posterWidth) {
         for (TMDbPosterWidth enumWidth : TMDbPosterWidth.values()) {
-            if (posterWidth <= enumWidth.maxWidth) {
+            if (0.8 * posterWidth <= enumWidth.maxWidth) {
                 return enumWidth;
             }
         }

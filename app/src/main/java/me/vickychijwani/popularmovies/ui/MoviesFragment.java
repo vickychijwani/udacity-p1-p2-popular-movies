@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
@@ -113,8 +115,7 @@ public class MoviesFragment extends BaseFragment {
             lp.width = mPosterWidth;
             lp.height = mPosterHeight;
             view.setLayoutParams(lp);
-            MovieViewHolder viewHolder = new MovieViewHolder(view);
-            return viewHolder;
+            return new MovieViewHolder(view);
         }
 
         @Override
@@ -125,6 +126,9 @@ public class MoviesFragment extends BaseFragment {
                     .resize(mPosterWidth, mPosterHeight)
                     .centerCrop()
                     .into(holder.mPoster);
+            if (BuildConfig.DEBUG) {
+                Log.d("Picasso", "Will resize image to " + mPosterWidth + "x" + mPosterHeight);
+            }
         }
 
         @Override
