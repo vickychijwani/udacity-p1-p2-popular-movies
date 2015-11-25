@@ -8,11 +8,13 @@ import com.google.gson.GsonBuilder;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import me.vickychijwani.popularmovies.BuildConfig;
+import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.entity.MovieResults;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
 import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
@@ -60,7 +62,14 @@ public class NetworkService {
         enqueue(mApiService.fetchMostPopularMovies(mApiKey), new ApiCallback<MovieResults>() {
             @Override
             public void onApiResponse(Response<MovieResults> response, Retrofit retrofit) {
-                getDataBus().post(new MostPopularMoviesLoadedEvent(response.body().getResults()));
+                if (response.body() != null) {
+                    List<Movie> movies = response.body().getResults();
+                    getDataBus().post(new MostPopularMoviesLoadedEvent(movies));
+                } else if (response.errorBody() != null) {
+                    try { Log.e(TAG, response.errorBody().string()); } catch (IOException ignored) {}
+                } else {
+                    Log.e(TAG, "response.body() and response.errorBody() are both null!");
+                }
             }
 
             @Override

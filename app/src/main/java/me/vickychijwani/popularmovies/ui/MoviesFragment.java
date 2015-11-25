@@ -26,7 +26,7 @@ import me.vickychijwani.popularmovies.event.events.CancelAllEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMostPopularMoviesEvent;
 import me.vickychijwani.popularmovies.event.events.MostPopularMoviesLoadedEvent;
 import me.vickychijwani.popularmovies.util.Util;
-public class MoviesActivityFragment extends BaseFragment {
+public class MoviesFragment extends BaseFragment {
 
     // this is a good ratio for TMDb posters
     private static final double TMDB_POSTER_SIZE_RATIO = 185.0 / 277.0;
@@ -37,7 +37,7 @@ public class MoviesActivityFragment extends BaseFragment {
     private RecyclerView.Adapter mMoviesAdapter;
     private List<Movie> mMovies = new ArrayList<>();
 
-    public MoviesActivityFragment() {}
+    public MoviesFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

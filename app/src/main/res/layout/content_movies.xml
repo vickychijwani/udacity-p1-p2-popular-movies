@@ -1,6 +1,6 @@
 <fragment
     android:id="@+id/fragment"
-    android:name="me.vickychijwani.popularmovies.ui.MoviesActivityFragment"
+    android:name="me.vickychijwani.popularmovies.ui.MoviesFragment"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
