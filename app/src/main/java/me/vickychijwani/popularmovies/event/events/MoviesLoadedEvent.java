@@ -4,11 +4,11 @@ import java.util.List;
 
 import me.vickychijwani.popularmovies.entity.Movie;
 
-public final class MostPopularMoviesLoadedEvent implements ApiEvent {
+public final class MoviesLoadedEvent implements ApiEvent {
 
     public final List<Movie> movies;
 
-    public MostPopularMoviesLoadedEvent(List<Movie> movies) {
+    public MoviesLoadedEvent(List<Movie> movies) {
         this.movies = movies;
     }
 

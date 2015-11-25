@@ -9,9 +9,10 @@ import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.entity.Movie;
@@ -19,8 +20,8 @@ import me.vickychijwani.popularmovies.entity.MovieResults;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
 import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
 import me.vickychijwani.popularmovies.event.events.CancelAllEvent;
-import me.vickychijwani.popularmovies.event.events.LoadMostPopularMoviesEvent;
-import me.vickychijwani.popularmovies.event.events.MostPopularMoviesLoadedEvent;
+import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
+import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.GsonConverterFactory;
@@ -34,7 +35,7 @@ public class NetworkService {
 
     private MovieDBApiService mApiService;
     private String mApiKey;
-    private List<Call> mPendingCalls = new ArrayList<>();
+    private Map<String, Call> mPendingCalls = new HashMap<>();
 
     public NetworkService() {
         Gson gson = new GsonBuilder()
@@ -58,13 +59,14 @@ public class NetworkService {
     }
 
     @Subscribe
-    public void onLoadMostPopularMoviesEvent(final LoadMostPopularMoviesEvent event) {
-        enqueue(mApiService.fetchMostPopularMovies(mApiKey), new ApiCallback<MovieResults>() {
+    public void onLoadMoviesEvent(final LoadMoviesEvent event) {
+        Call<MovieResults> call = mApiService.fetchMovies(mApiKey, event.sortCriteria.str);
+        enqueue(event.getClass().getSimpleName(), call, new ApiCallback<MovieResults>() {
             @Override
             public void onApiResponse(Response<MovieResults> response, Retrofit retrofit) {
                 if (response.body() != null) {
                     List<Movie> movies = response.body().getResults();
-                    getDataBus().post(new MostPopularMoviesLoadedEvent(movies));
+                    getDataBus().post(new MoviesLoadedEvent(movies));
                 } else if (response.errorBody() != null) {
                     try { Log.e(TAG, response.errorBody().string()); } catch (IOException ignored) {}
                 } else {
@@ -81,15 +83,33 @@ public class NetworkService {
 
     @Subscribe
     public void onCancelAllEvent(CancelAllEvent event) {
-        for (Call call : mPendingCalls) {
+        for (Call call : mPendingCalls.values()) {
             call.cancel();
         }
+        mPendingCalls.clear();
     }
 
-    private <T> void enqueue(Call<T> call, ApiCallback<T> apiCallback) {
-        mPendingCalls.add(call);
+    private <T> void enqueue(String tag, Call<T> call, ApiCallback<T> apiCallback) {
+        // cancel any outstanding request with the same tag
+        Call pendingRequest = mPendingCalls.remove(tag);
+        if (pendingRequest != null) {
+            pendingRequest.cancel();
+        }
+        // send a new request
+        mPendingCalls.put(tag, call);
         apiCallback.setCall(call);
         call.enqueue(apiCallback);
+    }
+
+    private void removePendingCall(Call call) {
+        if (call == null) {
+            return;
+        }
+        for (Map.Entry<String, Call> entry : mPendingCalls.entrySet()) {
+            if (call == entry.getValue()) {
+                mPendingCalls.remove(entry.getKey());
+            }
+        }
     }
 
     private abstract class ApiCallback<T> implements Callback<T> {
@@ -101,17 +121,13 @@ public class NetworkService {
 
         @Override
         public void onResponse(Response<T> response, Retrofit retrofit) {
-            if (mCall != null) {
-                mPendingCalls.remove(mCall);
-            }
+            removePendingCall(mCall);
             onApiResponse(response, retrofit);
         }
 
         @Override
         public void onFailure(Throwable throwable) {
-            if (mCall != null) {
-                mPendingCalls.remove(mCall);
-            }
+            removePendingCall(mCall);
             Log.e(TAG, "API error: " + throwable.getMessage());
             Log.e(TAG, Log.getStackTraceString(throwable));
             onApiFailure(throwable);

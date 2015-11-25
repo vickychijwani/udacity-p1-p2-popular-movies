@@ -25,11 +25,12 @@ import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
 import me.vickychijwani.popularmovies.event.events.CancelAllEvent;
-import me.vickychijwani.popularmovies.event.events.LoadMostPopularMoviesEvent;
-import me.vickychijwani.popularmovies.event.events.MostPopularMoviesLoadedEvent;
+import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
+import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
 import me.vickychijwani.popularmovies.util.Util;
 public class MoviesFragment extends BaseFragment {
 
+    public static final String TAG = "MoviesFragment";
     // this is a good ratio for TMDb posters
     private static final double TMDB_POSTER_SIZE_RATIO = 185.0 / 277.0;
     private static final int DESIRED_GRID_COLUMN_WIDTH_DP = 300;
@@ -68,7 +69,7 @@ public class MoviesFragment extends BaseFragment {
     @Override
     public void onStart() {
         super.onStart();
-        getDataBus().post(new LoadMostPopularMoviesEvent());
+        getDataBus().post(new LoadMoviesEvent(LoadMoviesEvent.SortCriteria.POPULARITY));
     }
 
     @Override
@@ -79,7 +80,13 @@ public class MoviesFragment extends BaseFragment {
     }
 
     @Subscribe
-    public void onMostPopularMoviesLoadedEvent(MostPopularMoviesLoadedEvent event) {
+    public void onMostPopularMoviesLoadedEvent(MoviesLoadedEvent event) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Loaded " + event.movies.size() + " movies:");
+            for (Movie movie : event.movies) {
+                Log.d(TAG, movie.getTitle() + " (poster: " + movie.getPosterPath() + ")");
+            }
+        }
         mMovies.clear();
         mMovies.addAll(event.movies);
         mMoviesAdapter.notifyDataSetChanged();

@@ -7,10 +7,7 @@ import retrofit.http.Query;
 
 public interface MovieDBApiService {
 
-    @GET("discover/movie?sort_by=popularity.desc")
-    Call<MovieResults> fetchMostPopularMovies(@Query("api_key") String apiKey);
-
-    @GET("discover/movie?sort_by=vote_average.desc")
-    Call<MovieResults> fetchHighestRatedMovies(@Query("api_key") String apiKey);
+    @GET("discover/movie")
+    Call<MovieResults> fetchMovies(@Query("api_key") String apiKey, @Query("sort_by") String sortBy);
 
 }
