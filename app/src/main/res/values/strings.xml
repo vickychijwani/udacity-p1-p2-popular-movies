@@ -3,6 +3,9 @@
     <string name="action_settings">Settings</string>
 
     <string name="api_error">Error while fetching data</string>
+    <string name="sort_by">Sort By</string>
+    <string name="sort_popularity">Sort by Most Popular</string>
+    <string name="sort_rating">Sort by Highest Rated</string>
 
     <!-- Content descriptions for accessibility -->
     <string name="content_desc_movie_poster">Movie poster</string>

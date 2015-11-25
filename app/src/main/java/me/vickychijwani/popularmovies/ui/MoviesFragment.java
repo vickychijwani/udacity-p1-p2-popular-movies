@@ -8,6 +8,9 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -23,11 +26,13 @@ import butterknife.ButterKnife;
 import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
+import me.vickychijwani.popularmovies.entity.MovieResults;
 import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
 import me.vickychijwani.popularmovies.event.events.CancelAllEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
 import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
 import me.vickychijwani.popularmovies.util.Util;
+
 public class MoviesFragment extends BaseFragment {
 
     public static final String TAG = "MoviesFragment";
@@ -69,7 +74,7 @@ public class MoviesFragment extends BaseFragment {
     @Override
     public void onStart() {
         super.onStart();
-        getDataBus().post(new LoadMoviesEvent(LoadMoviesEvent.SortCriteria.POPULARITY));
+        getDataBus().post(new LoadMoviesEvent(MovieResults.SortCriteria.POPULARITY));
     }
 
     @Override
@@ -77,6 +82,25 @@ public class MoviesFragment extends BaseFragment {
         // cancel all pending and in-flight requests, if any, to conserve resources
         getDataBus().post(new CancelAllEvent());
         super.onStop();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_movies, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_sort_popularity:
+                getDataBus().post(new LoadMoviesEvent(MovieResults.SortCriteria.POPULARITY));
+                return true;
+            case R.id.action_sort_rating:
+                getDataBus().post(new LoadMoviesEvent(MovieResults.SortCriteria.RATING));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Subscribe

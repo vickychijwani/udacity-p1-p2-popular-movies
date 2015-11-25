@@ -1,9 +1,26 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".ui.MoviesActivity" >
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
+    tools:context=".ui.MoviesActivity">
+
+    <item
+        android:id="@+id/action_sort"
+        android:title="@string/sort_by"
+        android:icon="@drawable/sort"
+        app:showAsAction="ifRoom">
+
+        <menu>
+            <item
+                android:id="@+id/action_sort_popularity"
+                android:title="@string/sort_popularity"
+                />
+            <item
+                android:id="@+id/action_sort_rating"
+                android:title="@string/sort_rating"
+                />
+        </menu>
+
+    </item>
+
 </menu>

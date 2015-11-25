@@ -1,5 +1,5 @@
 <fragment
-    android:id="@+id/fragment"
+    android:id="@+id/movies_fragment"
     android:name="me.vickychijwani.popularmovies.ui.MoviesFragment"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

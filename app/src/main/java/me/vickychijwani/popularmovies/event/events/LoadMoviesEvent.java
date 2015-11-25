@@ -1,18 +1,12 @@
 package me.vickychijwani.popularmovies.event.events;
 
+import me.vickychijwani.popularmovies.entity.MovieResults;
+
 public final class LoadMoviesEvent implements ApiEvent {
 
-    public enum SortCriteria {
-        POPULARITY("popularity.desc"), RATING("vote_average.desc");
-        public final String str;
-        SortCriteria(String str) {
-            this.str = str;
-        }
-    }
+    public final MovieResults.SortCriteria sortCriteria;
 
-    public final SortCriteria sortCriteria;
-
-    public LoadMoviesEvent(SortCriteria sortCriteria) {
+    public LoadMoviesEvent(MovieResults.SortCriteria sortCriteria) {
         this.sortCriteria = sortCriteria;
     }
 
