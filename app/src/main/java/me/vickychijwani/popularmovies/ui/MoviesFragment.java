@@ -3,6 +3,7 @@ package me.vickychijwani.popularmovies.ui;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
@@ -88,20 +89,6 @@ public class MoviesFragment extends BaseFragment implements
     }
 
     @Override
-    public void onRefresh() {
-        if (! mSwipeRefreshLayout.isRefreshing()) {
-            mSwipeRefreshLayout.setRefreshing(true);
-        }
-        getDataBus().post(new LoadMoviesEvent(mCurrentSortCriteria));
-    }
-
-    public void stopRefreshing() {
-        // cancel all pending and in-flight requests, if any, to conserve resources
-        getDataBus().post(new CancelAllEvent());
-        mSwipeRefreshLayout.setRefreshing(false);
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_movies, menu);
     }
@@ -120,11 +107,39 @@ public class MoviesFragment extends BaseFragment implements
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(MovieResults.SortCriteria.class.getSimpleName(), mCurrentSortCriteria.name());
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState == null) {
+            return;
+        }
+        String enumName = savedInstanceState.getString(MovieResults.SortCriteria.class.getSimpleName());
+        mCurrentSortCriteria = MovieResults.SortCriteria.valueOf(enumName);
+    }
+
     public void setSortCriteria(MovieResults.SortCriteria criteria) {
         if (mCurrentSortCriteria != criteria) {
             mCurrentSortCriteria = criteria;
+            mSwipeRefreshLayout.setRefreshing(true);
             onRefresh();
         }
+    }
+
+    @Override
+    public void onRefresh() {
+        getDataBus().post(new LoadMoviesEvent(mCurrentSortCriteria));
+    }
+
+    public void stopRefreshing() {
+        // cancel all pending and in-flight requests, if any, to conserve resources
+        getDataBus().post(new CancelAllEvent());
+        mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Subscribe
