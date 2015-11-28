@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -32,15 +33,18 @@ import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
 import me.vickychijwani.popularmovies.util.Util;
 
 public class MoviesFragment extends BaseFragment implements
-        MoviesAdapter.MovieViewHolder.ClickListener {
+        MoviesAdapter.MovieViewHolder.ClickListener,
+        SwipeRefreshLayout.OnRefreshListener {
 
     public static final String TAG = "MoviesFragment";
     private static final int DESIRED_GRID_COLUMN_WIDTH_DP = 300;
 
     @Bind(R.id.movies_list)             RecyclerView mMoviesListView;
+    @Bind(R.id.swipe_refresh_layout)    SwipeRefreshLayout mSwipeRefreshLayout;
 
     private MoviesAdapter mMoviesAdapter;
     private List<Movie> mMovies = new ArrayList<>();
+    private MovieResults.SortCriteria mCurrentSortCriteria = MovieResults.SortCriteria.POPULARITY;
 
     public MoviesFragment() {}
 
@@ -65,20 +69,36 @@ public class MoviesFragment extends BaseFragment implements
         mMoviesAdapter = new MoviesAdapter(activity, mMovies, actualPosterViewWidth, this);
         mMoviesListView.setAdapter(mMoviesAdapter);
 
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary);
+
         return view;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        getDataBus().post(new LoadMoviesEvent(MovieResults.SortCriteria.POPULARITY));
+        onRefresh();
     }
 
     @Override
     public void onStop() {
+        stopRefreshing();
+        super.onStop();
+    }
+
+    @Override
+    public void onRefresh() {
+        if (! mSwipeRefreshLayout.isRefreshing()) {
+            mSwipeRefreshLayout.setRefreshing(true);
+        }
+        getDataBus().post(new LoadMoviesEvent(mCurrentSortCriteria));
+    }
+
+    public void stopRefreshing() {
         // cancel all pending and in-flight requests, if any, to conserve resources
         getDataBus().post(new CancelAllEvent());
-        super.onStop();
+        mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
@@ -90,13 +110,20 @@ public class MoviesFragment extends BaseFragment implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_sort_popularity:
-                getDataBus().post(new LoadMoviesEvent(MovieResults.SortCriteria.POPULARITY));
+                setSortCriteria(MovieResults.SortCriteria.POPULARITY);
                 return true;
             case R.id.action_sort_rating:
-                getDataBus().post(new LoadMoviesEvent(MovieResults.SortCriteria.RATING));
+                setSortCriteria(MovieResults.SortCriteria.RATING);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void setSortCriteria(MovieResults.SortCriteria criteria) {
+        if (mCurrentSortCriteria != criteria) {
+            mCurrentSortCriteria = criteria;
+            onRefresh();
         }
     }
 
@@ -111,6 +138,7 @@ public class MoviesFragment extends BaseFragment implements
         mMovies.clear();
         mMovies.addAll(event.movies);
         mMoviesAdapter.notifyDataSetChanged();
+        mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Subscribe
