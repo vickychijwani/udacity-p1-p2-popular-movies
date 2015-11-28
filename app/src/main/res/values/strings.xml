@@ -7,6 +7,8 @@
     <string name="sort_popularity">Sort by Most Popular</string>
     <string name="sort_rating">Sort by Highest Rated</string>
 
+    <string name="title_activity_movie_details">Movie</string>
+
     <!-- Content descriptions for accessibility -->
     <string name="content_desc_movie_poster">Movie poster</string>
 </resources>

@@ -1,7 +1,7 @@
 package me.vickychijwani.popularmovies.ui;
 
 import android.app.Activity;
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.GridLayoutManager;
@@ -13,10 +13,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.squareup.otto.Subscribe;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +31,15 @@ import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
 import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
 import me.vickychijwani.popularmovies.util.Util;
 
-public class MoviesFragment extends BaseFragment {
+public class MoviesFragment extends BaseFragment implements
+        MoviesAdapter.MovieViewHolder.ClickListener {
 
     public static final String TAG = "MoviesFragment";
-    // this is a good ratio for TMDb posters
-    private static final double TMDB_POSTER_SIZE_RATIO = 185.0 / 277.0;
     private static final int DESIRED_GRID_COLUMN_WIDTH_DP = 300;
 
     @Bind(R.id.movies_list)             RecyclerView mMoviesListView;
 
-    private RecyclerView.Adapter mMoviesAdapter;
+    private MoviesAdapter mMoviesAdapter;
     private List<Movie> mMovies = new ArrayList<>();
 
     public MoviesFragment() {}
@@ -65,7 +62,7 @@ public class MoviesFragment extends BaseFragment {
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(activity, optimalColumnCount);
         mMoviesListView.setLayoutManager(layoutManager);
 
-        mMoviesAdapter = new MoviesAdapter(activity, mMovies, actualPosterViewWidth);
+        mMoviesAdapter = new MoviesAdapter(activity, mMovies, actualPosterViewWidth, this);
         mMoviesListView.setAdapter(mMoviesAdapter);
 
         return view;
@@ -123,61 +120,14 @@ public class MoviesFragment extends BaseFragment {
         }
     }
 
-    private static final class MoviesAdapter extends RecyclerView.Adapter<MovieViewHolder> {
-
-        private final List<Movie> mMovies;
-        private final LayoutInflater mInflater;
-        private final Picasso mPicasso;
-        private final int mPosterWidth;
-        private final int mPosterHeight;
-
-        public MoviesAdapter(Context context, List<Movie> movies, int posterWidth) {
-            mMovies = movies;
-            mInflater = LayoutInflater.from(context);
-            mPicasso = Picasso.with(context);
-            mPosterWidth = posterWidth;
-            mPosterHeight = (int) (posterWidth / TMDB_POSTER_SIZE_RATIO);
-        }
-
-        @Override
-        public MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = mInflater.inflate(R.layout.movie_list_item, parent, false);
-            RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) view.getLayoutParams();
-            lp.width = mPosterWidth;
-            lp.height = mPosterHeight;
-            view.setLayoutParams(lp);
-            return new MovieViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(MovieViewHolder holder, int position) {
-            Movie movie = mMovies.get(position);
-            mPicasso
-                    .load(Util.buildPosterUrl(movie.getPosterPath(), mPosterWidth))
-                    .resize(mPosterWidth, mPosterHeight)
-                    .centerCrop()
-                    .into(holder.mPoster);
-            if (BuildConfig.DEBUG) {
-                Log.d("Picasso", "Will resize image to " + mPosterWidth + "x" + mPosterHeight);
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return mMovies.size();
-        }
-
-    }
-
-    static final class MovieViewHolder extends RecyclerView.ViewHolder {
-
-        @Bind(R.id.movie_poster)            ImageView mPoster;
-
-        public MovieViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
-
+    @Override
+    public void onPosterClick(View itemView) {
+        int pos = mMoviesListView.getChildLayoutPosition(itemView);
+        if (pos == RecyclerView.NO_POSITION) return;
+        Movie movie = mMoviesAdapter.getItem(pos);
+        Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
+        intent.putExtra(BundleKeys.MOVIE, movie);
+        startActivity(intent);
     }
 
 }
