@@ -1,0 +1,140 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.MovieDetailsFragment">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/backdrop"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/details_backdrop_height"
+            android:background="#ddd"
+            android:contentDescription="@string/content_desc_backdrop_image"
+            />
+
+        <ImageView
+            android:id="@+id/poster"
+            android:layout_width="@dimen/details_poster_width"
+            android:layout_height="@dimen/details_poster_height"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginLeft="@dimen/details_poster_margin_left"
+            android:layout_marginStart="@dimen/details_poster_margin_left"
+            android:layout_marginTop="@dimen/details_poster_margin_top"
+            android:background="#bbb"
+            android:contentDescription="@string/content_desc_movie_poster"
+            />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/backdrop"
+            android:layout_marginEnd="@dimen/margin_default"
+            android:layout_marginLeft="@dimen/margin_default"
+            android:layout_marginRight="@dimen/margin_default"
+            android:layout_marginStart="@dimen/margin_default"
+            android:layout_marginTop="@dimen/margin_default"
+            android:layout_toEndOf="@id/poster"
+            android:layout_toRightOf="@id/poster"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="The Dark Knight very very very very long long movie title"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            />
+
+        <TextView
+            android:id="@+id/release_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/title"
+            android:layout_marginBottom="@dimen/margin_default"
+            android:layout_marginEnd="@dimen/margin_default"
+            android:layout_marginLeft="@dimen/margin_default"
+            android:layout_marginRight="@dimen/margin_default"
+            android:layout_marginStart="@dimen/margin_default"
+            android:layout_marginTop="@dimen/margin_inline"
+            android:layout_toEndOf="@id/poster"
+            android:layout_toRightOf="@id/poster"
+            android:text="(2008)"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            />
+
+        <TextView
+            android:id="@+id/genres"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/release_date"
+            android:layout_below="@id/title"
+            android:layout_margin="@dimen/margin_default"
+            android:layout_toEndOf="@id/release_date"
+            android:layout_toRightOf="@id/release_date"
+            android:text="Action | Crime | Drama"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            android:textColor="?android:attr/textColorSecondary"
+            />
+
+        <TextView
+            android:id="@+id/rating_caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/poster"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/margin_large"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textColor="?android:attr/textColorSecondary"
+            android:text="TMDb Rating"
+            />
+
+        <LinearLayout
+            android:id="@+id/rating_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/rating_caption"
+            android:layout_centerHorizontal="true"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="8.8"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display3"
+                android:textColor="?android:attr/textColorPrimary"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_default"
+                android:text="/10"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="?android:attr/textColorSecondary"
+                />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/synopsis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/rating_container"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/margin_large"
+            android:layout_marginLeft="@dimen/margin_default"
+            android:layout_marginStart="@dimen/margin_default"
+            android:layout_marginRight="@dimen/margin_default"
+            android:layout_marginEnd="@dimen/margin_default"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:text="When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, the caped crusader must come to terms with one of the greatest psychological tests of his ability to fight injustice."
+            />
+
+    </RelativeLayout>
+
+</ScrollView>

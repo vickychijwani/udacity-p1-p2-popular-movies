@@ -12,6 +12,7 @@ public class Movie implements Parcelable {
     private int id;
     private String title;
     private String posterPath;
+    private String backdropPath;
 
     @SerializedName("overview")
     private String synopsis;
@@ -43,6 +44,14 @@ public class Movie implements Parcelable {
 
     public void setPosterPath(String posterPath) {
         this.posterPath = posterPath;
+    }
+
+    public String getBackdropPath() {
+        return backdropPath;
+    }
+
+    public void setBackdropPath(String backdropPath) {
+        this.backdropPath = backdropPath;
     }
 
     public String getSynopsis() {
@@ -79,6 +88,7 @@ public class Movie implements Parcelable {
         dest.writeInt(id);
         dest.writeString(title);
         dest.writeString(posterPath);
+        dest.writeString(backdropPath);
         dest.writeString(synopsis);
         dest.writeFloat(rating);
         dest.writeLong(releaseDate.getTime());
@@ -91,6 +101,7 @@ public class Movie implements Parcelable {
             movie.setId(source.readInt());
             movie.setTitle(source.readString());
             movie.setPosterPath(source.readString());
+            movie.setBackdropPath(source.readString());
             movie.setSynopsis(source.readString());
             movie.setRating(source.readFloat());
             Date releaseDate = new Date();

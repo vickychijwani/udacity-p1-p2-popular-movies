@@ -1,14 +1,117 @@
-<RelativeLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".ui.MovieDetailsFragment"
-    tools:showIn="@layout/activity_movie_details">
+    tools:context=".ui.MovieDetailsFragment">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/margin_large">
 
-</RelativeLayout>
+        <ImageView
+            android:id="@+id/backdrop"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/details_backdrop_height"
+            android:contentDescription="@string/content_desc_backdrop_image"
+            tools:background="#ddd"
+            />
+
+        <ImageView
+            android:id="@+id/poster"
+            android:layout_width="@dimen/details_poster_width"
+            android:layout_height="@dimen/details_poster_height"
+            android:layout_marginTop="@dimen/details_poster_margin_top"
+            android:layout_marginLeft="@dimen/margin_large"
+            android:layout_marginStart="@dimen/margin_large"
+            android:contentDescription="@string/content_desc_movie_poster"
+            tools:background="#ccc"
+            />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/backdrop"
+            android:layout_toRightOf="@id/poster"
+            android:layout_toEndOf="@id/poster"
+            android:layout_marginTop="@dimen/margin_default"
+            android:layout_marginLeft="@dimen/margin_large"
+            android:layout_marginStart="@dimen/margin_large"
+            android:layout_marginRight="@dimen/margin_large"
+            android:layout_marginEnd="@dimen/margin_large"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            tools:text="The Hunger Games: Mockingjay - Part 2"
+            />
+
+        <TextView
+            android:id="@+id/release_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/title"
+            android:layout_toRightOf="@id/poster"
+            android:layout_toEndOf="@id/poster"
+            android:layout_marginTop="2dp"
+            android:layout_marginLeft="@dimen/margin_large"
+            android:layout_marginStart="@dimen/margin_large"
+            android:layout_marginRight="@dimen/margin_default"
+            android:layout_marginEnd="@dimen/margin_default"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            tools:text="2015"
+            />
+
+        <LinearLayout
+            android:id="@+id/rating_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/release_date"
+            android:layout_toRightOf="@id/poster"
+            android:layout_toEndOf="@id/poster"
+            android:layout_marginTop="-8dp"
+            android:layout_marginLeft="@dimen/margin_large"
+            android:layout_marginStart="@dimen/margin_large"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+                android:textColor="?android:attr/textColorPrimary"
+                tools:text="7.3"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_default"
+                android:text="@string/rating_denominator"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="?android:attr/textColorSecondary"
+                />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/synopsis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/poster"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/margin_large"
+            android:layout_marginLeft="@dimen/margin_large"
+            android:layout_marginStart="@dimen/margin_large"
+            android:layout_marginRight="@dimen/margin_large"
+            android:layout_marginEnd="@dimen/margin_large"
+            android:lineSpacingMultiplier="@dimen/body_text_line_spacing"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            tools:text="With the nation of Panem in a full scale war, Katniss confronts President Snow in the final showdown. Teamed with a group of her closest friends – including Gale, Finnick, and Peeta – Katniss goes off on a mission with the unit from District 13 as they risk their lives to stage an assassination attempt on President Snow who has become increasingly obsessed with destroying her. The mortal traps, enemies, and moral choices that await Katniss will challenge her more than any arena she faced in The Hunger Games."
+            />
+
+    </RelativeLayout>
+
+</ScrollView>
