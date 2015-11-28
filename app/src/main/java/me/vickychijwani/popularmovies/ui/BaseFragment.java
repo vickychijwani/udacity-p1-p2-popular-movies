@@ -11,6 +11,7 @@ public class BaseFragment extends Fragment {
     protected Bus getDataBus() {
         return DataBusProvider.getBus();
     }
+
     @Override
     public void onStart() {
         super.onStart();

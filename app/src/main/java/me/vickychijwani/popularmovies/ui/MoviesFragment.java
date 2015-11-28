@@ -79,7 +79,9 @@ public class MoviesFragment extends BaseFragment implements
     @Override
     public void onStart() {
         super.onStart();
-        onRefresh();
+        if (mMovies.isEmpty()) {
+            onRefresh();
+        }
     }
 
     @Override

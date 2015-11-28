@@ -7,7 +7,7 @@ import retrofit.http.Query;
 
 public interface MovieDBApiService {
 
-    @GET("discover/movie")
+    @GET("discover/movie?vote_count.gte=250")
     Call<MovieResults> fetchMovies(@Query("api_key") String apiKey, @Query("sort_by") String sortBy);
 
 }
