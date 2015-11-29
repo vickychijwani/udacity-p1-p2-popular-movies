@@ -1,6 +1,7 @@
 package me.vickychijwani.popularmovies.ui;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -172,7 +173,9 @@ public class MoviesFragment extends BaseFragment implements
         Movie movie = mMoviesAdapter.getItem(pos);
         Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
         intent.putExtra(BundleKeys.MOVIE, movie);
-        startActivity(intent);
+        ActivityOptions opts = ActivityOptions.makeScaleUpAnimation(itemView, 0, 0,
+                itemView.getWidth(), itemView.getHeight());
+        getActivity().startActivity(intent, opts.toBundle());
     }
 
 }
