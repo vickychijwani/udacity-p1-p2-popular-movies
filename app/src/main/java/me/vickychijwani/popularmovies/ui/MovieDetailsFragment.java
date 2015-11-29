@@ -1,6 +1,9 @@
 package me.vickychijwani.popularmovies.ui;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.graphics.Palette;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +61,8 @@ public class MovieDetailsFragment extends BaseFragment {
         picasso.load(Util.buildBackdropUrl(movie.getBackdropPath(), backdropWidth))
                 .resize(backdropWidth, backdropHeight)
                 .centerCrop()
-                .into(mBackdrop);
+                .transform(PaletteTransformation.instance())
+                .into(mBackdrop, new ActivityPaletteTransformation(mBackdrop));
 
         int posterWidth = getResources().getDimensionPixelSize(R.dimen.details_poster_width);
         int posterHeight = getResources().getDimensionPixelSize(R.dimen.details_poster_height);
@@ -105,6 +109,28 @@ public class MovieDetailsFragment extends BaseFragment {
                     .setStartDelay(100 + 75 * i)
                     .start();
         }
+    }
+
+    class ActivityPaletteTransformation extends PaletteTransformation.Callback {
+        public ActivityPaletteTransformation(@NonNull ImageView imageView) {
+            super(imageView);
+        }
+
+        @Override
+        protected void onSuccess(Palette palette) {
+            Activity activity = getActivity();
+            if (activity instanceof PaletteCallback) {
+                PaletteCallback callback = (PaletteCallback) activity;
+                callback.setPrimaryColor(palette);
+            }
+        }
+
+        @Override
+        public void onError() {}
+    }
+
+    public interface PaletteCallback {
+        void setPrimaryColor(Palette palette);
     }
 
 }

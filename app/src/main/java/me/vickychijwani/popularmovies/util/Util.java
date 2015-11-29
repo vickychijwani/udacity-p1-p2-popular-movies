@@ -1,6 +1,7 @@
 package me.vickychijwani.popularmovies.util;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
@@ -77,6 +78,14 @@ public class Util {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(displayMetrics);
         return displayMetrics.widthPixels;
+    }
+
+    public static int multiplyColor(int srcColor, float factor) {
+        int alpha = Color.alpha(srcColor);
+        int red = (int) (Color.red(srcColor) * factor);
+        int green = (int) (Color.green(srcColor) * factor);
+        int blue = (int) (Color.blue(srcColor) * factor);
+        return Color.argb(alpha, red, green, blue);
     }
 
 
