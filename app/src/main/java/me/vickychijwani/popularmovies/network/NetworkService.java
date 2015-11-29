@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.entity.MovieResults;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
@@ -47,7 +46,7 @@ public class NetworkService {
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         mApiService = retrofit.create(MovieDBApiService.class);
-        mApiKey = BuildConfig.THE_MOVIE_DB_API_KEY;
+        mApiKey = "YOUR_API_KEY_HERE";
     }
 
     public void start() {
