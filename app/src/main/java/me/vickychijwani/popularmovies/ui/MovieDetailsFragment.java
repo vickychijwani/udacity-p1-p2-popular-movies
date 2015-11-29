@@ -1,7 +1,6 @@
 package me.vickychijwani.popularmovies.ui;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -91,7 +90,7 @@ public class MovieDetailsFragment extends BaseFragment {
 
     public void animateContent() {
         View[] animatedViews = new View[] {
-                mPoster, mTitle, mReleaseDate, mRatingContainer, mSynopsis
+                mTitle, mReleaseDate, mRatingContainer, mSynopsis
         };
         Interpolator interpolator = new DecelerateInterpolator();
         for (int i = 0; i < animatedViews.length; ++i) {
