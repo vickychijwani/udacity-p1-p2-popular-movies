@@ -80,6 +80,7 @@ public class MovieDetailsFragment extends BaseFragment {
         mRating.setText(String.format("%1$2.1f", movie.getRating()));
         mSynopsis.setText(movie.getSynopsis());
 
+        // credits for onPreDraw technique: http://frogermcs.github.io/Instagram-with-Material-Design-concept-part-2-Comments-transition/
         view.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {

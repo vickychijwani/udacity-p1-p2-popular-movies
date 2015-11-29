@@ -32,6 +32,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // credits for up arrow color tinting: http://stackoverflow.com/a/26837072/504611
         mUpArrow = getResources().getDrawable(R.drawable.arrow_left);
         if (mUpArrow != null) {
             int upArrowColor = getResources().getColor(android.R.color.white);
@@ -107,6 +108,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements
 
     private void startColorAnimation(int fromColor, int toColor,
                                             final ColorUpdateListener listener) {
+        // credits: http://stackoverflow.com/a/14467625/504611
         ValueAnimator colorAnimation = ValueAnimator
                 .ofObject(new ArgbEvaluator(), fromColor, toColor)
                 .setDuration(500);
