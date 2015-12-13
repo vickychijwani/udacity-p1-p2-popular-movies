@@ -6,8 +6,8 @@
 
     <item
         android:id="@+id/action_sort"
-        android:title="@string/sort_by"
         android:icon="@drawable/sort"
+        android:title="@string/sort_by"
         app:showAsAction="ifRoom">
 
         <menu>
