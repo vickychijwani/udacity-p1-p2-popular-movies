@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -38,14 +39,17 @@ public class MoviesFragment extends BaseFragment implements
         MoviesAdapter.MovieViewHolder.ClickListener,
         SwipeRefreshLayout.OnRefreshListener {
 
-    public static final String TAG = "MoviesFragment";
+    private static final String TAG = "MoviesFragment";
     private static final int DESIRED_GRID_COLUMN_WIDTH_DP = 300;
+
+    private static final String KEY_MOVIES = "movies";
+    private static final String KEY_SORT_ORDER = MovieResults.SortCriteria.class.getSimpleName();
 
     @Bind(R.id.movies_list)             RecyclerView mMoviesListView;
     @Bind(R.id.swipe_refresh_layout)    SwipeRefreshLayout mSwipeRefreshLayout;
 
     private MoviesAdapter mMoviesAdapter;
-    private List<Movie> mMovies = new ArrayList<>();
+    private ArrayList<Movie> mMovies = new ArrayList<>();
     private MovieResults.SortCriteria mCurrentSortCriteria = MovieResults.SortCriteria.POPULARITY;
 
     public MoviesFragment() {}
@@ -73,6 +77,15 @@ public class MoviesFragment extends BaseFragment implements
 
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary);
+
+        if (savedInstanceState != null) {
+            String enumName = savedInstanceState.getString(KEY_SORT_ORDER);
+            mCurrentSortCriteria = MovieResults.SortCriteria.valueOf(enumName);
+            List<Movie> savedMovies = savedInstanceState.getParcelableArrayList(KEY_MOVIES);
+            if (savedMovies != null) {
+                showMovies(savedMovies);
+            }
+        }
 
         return view;
     }
@@ -113,7 +126,8 @@ public class MoviesFragment extends BaseFragment implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(MovieResults.SortCriteria.class.getSimpleName(), mCurrentSortCriteria.name());
+        outState.putString(KEY_SORT_ORDER, mCurrentSortCriteria.name());
+        outState.putParcelableArrayList(KEY_MOVIES, mMovies);
     }
 
     @Override
@@ -147,14 +161,18 @@ public class MoviesFragment extends BaseFragment implements
 
     @Subscribe
     public void onMostPopularMoviesLoadedEvent(MoviesLoadedEvent event) {
+        showMovies(event.movies);
+    }
+
+    private void showMovies(@NonNull List<Movie> movies) {
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, "Loaded " + event.movies.size() + " movies:");
-            for (Movie movie : event.movies) {
+            Log.d(TAG, "Loaded " + movies.size() + " movies:");
+            for (Movie movie : movies) {
                 Log.d(TAG, movie.getTitle() + " (poster: " + movie.getPosterPath() + ")");
             }
         }
         mMovies.clear();
-        mMovies.addAll(event.movies);
+        mMovies.addAll(movies);
         mMoviesAdapter.notifyDataSetChanged();
         mSwipeRefreshLayout.setRefreshing(false);
     }
