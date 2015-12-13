@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -30,7 +31,6 @@ import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.entity.MovieResults;
 import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
-import me.vickychijwani.popularmovies.event.events.CancelAllEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
 import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
 import me.vickychijwani.popularmovies.util.Util;
@@ -81,9 +81,9 @@ public class MoviesFragment extends BaseFragment implements
         if (savedInstanceState != null) {
             String enumName = savedInstanceState.getString(KEY_SORT_ORDER);
             mCurrentSortCriteria = MovieResults.SortCriteria.valueOf(enumName);
-            List<Movie> savedMovies = savedInstanceState.getParcelableArrayList(KEY_MOVIES);
-            if (savedMovies != null) {
-                showMovies(savedMovies);
+            List<Parcelable> parcelables = savedInstanceState.getParcelableArrayList(KEY_MOVIES);
+            if (parcelables != null) {
+                showMovies(Movie.fromParcelable(parcelables));
             }
         }
 
@@ -127,7 +127,7 @@ public class MoviesFragment extends BaseFragment implements
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(KEY_SORT_ORDER, mCurrentSortCriteria.name());
-        outState.putParcelableArrayList(KEY_MOVIES, mMovies);
+        outState.putParcelableArrayList(KEY_MOVIES, Movie.toParcelable(mMovies));
     }
 
     @Override
@@ -155,7 +155,6 @@ public class MoviesFragment extends BaseFragment implements
 
     public void stopRefreshing() {
         // cancel all pending and in-flight requests, if any, to conserve resources
-        getDataBus().post(new CancelAllEvent());
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
@@ -190,7 +189,7 @@ public class MoviesFragment extends BaseFragment implements
         if (pos == RecyclerView.NO_POSITION) return;
         Movie movie = mMoviesAdapter.getItem(pos);
         Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
-        intent.putExtra(BundleKeys.MOVIE, movie);
+        intent.putExtra(BundleKeys.MOVIE, Movie.toParcelable(movie));
         ActivityOptions opts = ActivityOptions.makeScaleUpAnimation(itemView, 0, 0,
                 itemView.getWidth(), itemView.getHeight());
         getActivity().startActivity(intent, opts.toBundle());

@@ -1,14 +1,27 @@
 package me.vickychijwani.popularmovies.entity;
 
-import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.parceler.Parcel;
+import org.parceler.ParcelPropertyConverter;
+import org.parceler.Parcels;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-public class Movie implements Parcelable {
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+import io.realm.annotations.RealmClass;
 
+@RealmClass
+@Parcel(value = Parcel.Serialization.BEAN, analyze = { Movie.class })
+public class Movie extends RealmObject {
+
+    @PrimaryKey
     private int id;
     private String title;
     private String posterPath;
@@ -21,6 +34,46 @@ public class Movie implements Parcelable {
     private float rating;
 
     private Date releaseDate;
+
+    // relationships
+    private RealmList<Review> reviews;
+    private RealmList<Video> videos;
+
+    public static List<Video> getTrailers(Movie movie) {
+        List<Video> trailers = new ArrayList<>();
+        for (Video video : movie.getVideos()) {
+            if (Video.TYPE_TRAILER.equals(video.getType())) {
+                trailers.add(video);
+            }
+        }
+        return trailers;
+    }
+
+    public static Parcelable toParcelable(Movie movie) {
+        return Parcels.wrap(Movie.class, movie);
+    }
+
+    public static ArrayList<Parcelable> toParcelable(List<Movie> movies) {
+        ArrayList<Parcelable> parcelables = new ArrayList<>(movies.size());
+        for (Movie movie : movies) {
+            parcelables.add(Parcels.wrap(Movie.class, movie));
+        }
+        return parcelables;
+    }
+
+    public static Movie fromParcelable(Parcelable parcelable) {
+        return Parcels.unwrap(parcelable);
+    }
+
+    public static List<Movie> fromParcelable(List<Parcelable> parcelables) {
+        List<Movie> movies = new ArrayList<>(parcelables.size());
+        for (Parcelable parcelable : parcelables) {
+            movies.add(Parcels.<Movie>unwrap(parcelable));
+        }
+        return movies;
+    }
+
+
 
     public int getId() {
         return id;
@@ -78,42 +131,22 @@ public class Movie implements Parcelable {
         this.releaseDate = releaseDate;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public RealmList<Review> getReviews() {
+        return reviews;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
-        dest.writeString(title);
-        dest.writeString(posterPath);
-        dest.writeString(backdropPath);
-        dest.writeString(synopsis);
-        dest.writeFloat(rating);
-        dest.writeLong(releaseDate.getTime());
+    @ParcelPropertyConverter(Review.RealmListParcelConverter.class)
+    public void setReviews(RealmList<Review> reviews) {
+        this.reviews = reviews;
     }
 
-    public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
-        @Override
-        public Movie createFromParcel(Parcel source) {
-            Movie movie = new Movie();
-            movie.setId(source.readInt());
-            movie.setTitle(source.readString());
-            movie.setPosterPath(source.readString());
-            movie.setBackdropPath(source.readString());
-            movie.setSynopsis(source.readString());
-            movie.setRating(source.readFloat());
-            Date releaseDate = new Date();
-            releaseDate.setTime(source.readLong());
-            movie.setReleaseDate(releaseDate);
-            return movie;
-        }
+    public RealmList<Video> getVideos() {
+        return videos;
+    }
 
-        @Override
-        public Movie[] newArray(int size) {
-            return new Movie[size];
-        }
-    };
+    @ParcelPropertyConverter(Video.RealmListParcelConverter.class)
+    public void setVideos(RealmList<Video> videos) {
+        this.videos = videos;
+    }
 
 }

@@ -40,7 +40,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements
             getSupportActionBar().setHomeAsUpIndicator(mUpArrow);
         }
 
-        Movie movie = getIntent().getExtras().getParcelable(BundleKeys.MOVIE);
+        Movie movie = Movie.fromParcelable(getIntent().getExtras().getParcelable(BundleKeys.MOVIE));
         //noinspection ConstantConditions
         getSupportActionBar().setTitle(movie.getTitle());
 

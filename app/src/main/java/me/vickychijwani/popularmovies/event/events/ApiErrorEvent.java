@@ -4,11 +4,11 @@ package me.vickychijwani.popularmovies.event.events;
 public final class ApiErrorEvent implements ApiEvent {
 
     public final ApiEvent sourceEvent;
-    public final String message;
+    public final Throwable throwable;
 
-    public ApiErrorEvent(ApiEvent sourceEvent, String message) {
+    public ApiErrorEvent(ApiEvent sourceEvent, Throwable throwable) {
         this.sourceEvent = sourceEvent;
-        this.message = message;
+        this.throwable = throwable;
     }
 
 }

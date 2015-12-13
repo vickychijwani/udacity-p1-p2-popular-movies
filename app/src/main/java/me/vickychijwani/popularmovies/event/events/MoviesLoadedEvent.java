@@ -4,7 +4,7 @@ import java.util.List;
 
 import me.vickychijwani.popularmovies.entity.Movie;
 
-public final class MoviesLoadedEvent implements ApiEvent {
+public final class MoviesLoadedEvent {
 
     public final List<Movie> movies;
 

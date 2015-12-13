@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.graphics.Palette;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,17 +14,26 @@ import android.view.animation.Interpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.otto.Subscribe;
 import com.squareup.picasso.Picasso;
 
 import java.util.Calendar;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
+import me.vickychijwani.popularmovies.entity.Review;
+import me.vickychijwani.popularmovies.entity.Video;
+import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
+import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.util.Util;
 
 public class MovieDetailsFragment extends BaseFragment {
+
+    private static final String TAG = "MovieDetailsFragment";
 
     @Bind(R.id.backdrop)            ImageView mBackdrop;
     @Bind(R.id.poster)              ImageView mPoster;
@@ -38,7 +48,7 @@ public class MovieDetailsFragment extends BaseFragment {
     public static MovieDetailsFragment newInstance(Movie movie) {
         MovieDetailsFragment fragment = new MovieDetailsFragment();
         Bundle args = new Bundle();
-        args.putParcelable(BundleKeys.MOVIE, movie);
+        args.putParcelable(BundleKeys.MOVIE, Movie.toParcelable(movie));
         fragment.setArguments(args);
         return fragment;
     }
@@ -49,7 +59,7 @@ public class MovieDetailsFragment extends BaseFragment {
         final View view = inflater.inflate(R.layout.fragment_movie_details, container, false);
         ButterKnife.bind(this, view);
 
-        Movie movie = getArguments().getParcelable(BundleKeys.MOVIE);
+        Movie movie = Movie.fromParcelable(getArguments().getParcelable(BundleKeys.MOVIE));
         if (movie == null) {
             throw new IllegalStateException("No movie given!");
         }
@@ -90,10 +100,23 @@ public class MovieDetailsFragment extends BaseFragment {
             }
         });
 
+        getDataBus().post(new LoadMovieEvent(movie.getId()));
+
         return view;
     }
 
-    public void animateContent() {
+    @Subscribe
+    public void onMovieLoadedEvent(MovieLoadedEvent event) {
+        Movie fullMovie = event.movie;
+        List<Review> reviews = fullMovie.getReviews();
+        List<Video> trailers = Movie.getTrailers(fullMovie);
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, String.format("Loaded %1$d reviews and %2$d trailers", reviews.size(),
+                    trailers.size()));
+        }
+    }
+
+    private void animateContent() {
         View[] animatedViews = new View[] {
                 mTitle, mReleaseDate, mRatingContainer, mSynopsis
         };

@@ -1,10 +1,12 @@
 package me.vickychijwani.popularmovies.network;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
@@ -14,13 +16,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.realm.RealmList;
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.entity.MovieResults;
+import me.vickychijwani.popularmovies.entity.Review;
+import me.vickychijwani.popularmovies.entity.Video;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
 import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
 import me.vickychijwani.popularmovies.event.events.CancelAllEvent;
+import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
+import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
+import me.vickychijwani.popularmovies.model.Database;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.GsonConverterFactory;
@@ -30,15 +38,20 @@ import retrofit.Retrofit;
 public class NetworkService {
 
     private static final String TAG = "NetworkService";
-    public static final String BASE_URL = "http://api.themoviedb.org/3/";
+    private static final String BASE_URL = "http://api.themoviedb.org/3/";
 
-    private MovieDBApiService mApiService;
-    private String mApiKey;
-    private Map<String, Call> mPendingCalls = new HashMap<>();
+    private final Database mDatabase;
+    private final MovieDBApiService mApiService;
+    private final String mApiKey;
+    private final Map<String, Call> mPendingCalls = new HashMap<>();
 
-    public NetworkService() {
+    public NetworkService(@NonNull Database database) {
+        mDatabase = database;
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(Date.class, new DateDeserializer())
+                .registerTypeAdapter(new TypeToken<RealmList<Video>>() {}.getType(), new VideoRealmListDeserializer())
+                .registerTypeAdapter(new TypeToken<RealmList<Review>>() {}.getType(), new ReviewRealmListDeserializer())
+                .setExclusionStrategies(new RealmExclusionStrategy())
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create();
         Retrofit retrofit = new Retrofit.Builder()
@@ -75,7 +88,41 @@ public class NetworkService {
 
             @Override
             public void onApiFailure(Throwable throwable) {
-                getDataBus().post(new ApiErrorEvent(event, throwable.getMessage()));
+                getDataBus().post(new ApiErrorEvent(event, throwable));
+            }
+        });
+    }
+
+    @Subscribe
+    public void onLoadMovieEvent(final LoadMovieEvent event) {
+        mDatabase.loadMovie(event.id, new Database.ReadCallback<Movie>() {
+            @Override
+            public void done(Movie movie) {
+                getDataBus().post(new MovieLoadedEvent(movie));
+            }
+
+            @Override
+            public void failed() {
+                Call<Movie> call = mApiService.fetchMovie(event.id, mApiKey);
+                enqueue(event.getClass().getSimpleName(), call, new ApiCallback<Movie>() {
+                    @Override
+                    public void onApiResponse(Response<Movie> response, Retrofit retrofit) {
+                        if (response.body() != null) {
+                            Movie movie = response.body();
+                            mDatabase.createOrUpdateModel(movie, new Database.WriteCallback() {
+                                @Override
+                                public void done() {
+                                    onLoadMovieEvent(event);
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onApiFailure(Throwable throwable) {
+                        getDataBus().post(new ApiErrorEvent(event, throwable));
+                    }
+                });
             }
         });
     }
