@@ -1,6 +1,5 @@
 package me.vickychijwani.popularmovies.model;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.gson.FieldNamingPolicy;
@@ -27,6 +26,8 @@ import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
+import me.vickychijwani.popularmovies.event.events.UpdateMovieEvent;
+import me.vickychijwani.popularmovies.util.AppUtil;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.GsonConverterFactory;
@@ -43,8 +44,8 @@ public class Model {
     private final String mApiKey;
     private final Map<String, Call> mPendingCalls = new HashMap<>();
 
-    public Model(@NonNull Database database) {
-        mDatabase = database;
+    public Model() {
+        mDatabase = new Database();
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(Date.class, new DateDeserializer())
                 .registerTypeAdapter(new TypeToken<RealmList<Video>>() {}.getType(), new VideoRealmListDeserializer())
@@ -57,51 +58,91 @@ public class Model {
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         mApiService = retrofit.create(MovieDBApiService.class);
-        mApiKey = "075c3ac2845f0a71e38797ec6f57cdfb";
+        mApiKey = "YOUR_API_KEY_HERE";
         getDataBus().register(this);
     }
 
     @Subscribe
     public void onLoadMoviesEvent(final LoadMoviesEvent event) {
-        Call<MovieResults> call = mApiService.fetchMovies(mApiKey, event.sortCriteria.str);
-        enqueue(event.getClass().getSimpleName(), call, new ApiCallback<MovieResults>() {
-            @Override
-            public void onApiResponse(MovieResults movieResults, Retrofit retrofit) {
-                final List<Movie> movies = movieResults.getResults();
-                mDatabase.createOrUpdateEntity(movies, new Database.WriteCallback() {
-                    @Override
-                    public void done() {
-                        getDataBus().post(new MoviesLoadedEvent(movies));
-                    }
-                });
-            }
-        });
+        if (event.sortCriteria == MovieResults.SortCriteria.FAVORITES) {
+            mDatabase.loadFavoriteMovies(new Database.ReadCallback<List<Movie>>() {
+                @Override
+                public void done(List<Movie> favorites) {
+                    getDataBus().post(new MoviesLoadedEvent(favorites));
+                }
+            });
+        } else {
+            Call<MovieResults> call = mApiService.fetchMovies(mApiKey, event.sortCriteria.str);
+            enqueue(event.getClass().getSimpleName(), call, new ApiCallback<MovieResults>() {
+                @Override
+                public void onApiResponse(MovieResults movieResults, Retrofit retrofit) {
+                    final List<Movie> movies = movieResults.getResults();
+                    mDatabase.loadFavoriteMovies(new Database.ReadCallback<List<Movie>>() {
+                        @Override
+                        public void done(List<Movie> favorites) {
+                            for (Movie m : movies)
+                                for (Movie f : favorites)
+                                    if (m.getId() == f.getId())
+                                        m.setFavorite(true);
+                            mDatabase.createOrUpdateEntity(movies, new Database.WriteCallback() {
+                                @Override
+                                public void done() {
+                                    getDataBus().post(new MoviesLoadedEvent(movies));
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
     }
 
     @Subscribe
     public void onLoadMovieEvent(final LoadMovieEvent event) {
         mDatabase.loadMovie(event.id, new Database.ReadCallback<Movie>() {
             @Override
+            public void done(final Movie movie) {
+                getDataBus().post(new MovieLoadedEvent(movie));
+                if (movie.getReviews().isEmpty() && movie.getVideos().isEmpty()) {
+                    Call<Movie> call = mApiService.fetchMovie(event.id, mApiKey);
+                    enqueue(event.getClass().getSimpleName(), call, new ApiCallback<Movie>() {
+                        @Override
+                        public void onApiResponse(Movie updatedMovie, Retrofit retrofit) {
+                            updatedMovie.setFavorite(movie.isFavorite());
+                            mDatabase.createOrUpdateEntity(updatedMovie, new Database.WriteCallback() {
+                                @Override
+                                public void done() {
+                                    readMovieFromDb(event.id);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void readMovieFromDb(int movieId) {
+        mDatabase.loadMovie(movieId, new Database.ReadCallback<Movie>() {
+            @Override
             public void done(Movie movie) {
                 getDataBus().post(new MovieLoadedEvent(movie));
             }
-
-            @Override
-            public void failed() {
-                Call<Movie> call = mApiService.fetchMovie(event.id, mApiKey);
-                enqueue(event.getClass().getSimpleName(), call, new ApiCallback<Movie>() {
-                    @Override
-                    public void onApiResponse(Movie movie, Retrofit retrofit) {
-                        mDatabase.createOrUpdateEntity(movie, new Database.WriteCallback() {
-                            @Override
-                            public void done() {
-                                onLoadMovieEvent(event);
-                            }
-                        });
-                    }
-                });
-            }
         });
+    }
+
+    @Subscribe
+    public void onUpdateMovieEvent(final UpdateMovieEvent event) {
+        final Movie movieCopy = AppUtil.copy(event.movie, Movie.class);
+        if (movieCopy != null) {
+            mDatabase.createOrUpdateEntity(movieCopy, new Database.WriteCallback() {
+                @Override
+                public void done() {
+                    // send over a copy of the updated movie
+                    getDataBus().post(new MovieLoadedEvent(movieCopy));
+                }
+            });
+        }
     }
 
     @Subscribe

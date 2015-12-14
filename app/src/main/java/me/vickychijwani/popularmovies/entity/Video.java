@@ -1,5 +1,6 @@
 package me.vickychijwani.popularmovies.entity;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.StringDef;
 
 import org.parceler.Parcel;
@@ -33,6 +34,18 @@ public class Video extends RealmObject {
     @Site private String site;
     private int size;
     @Type private String type;
+
+
+
+    public Video() {}
+
+    public Video(@NonNull Video other) {
+        this.id = other.getId();
+        this.name = other.getName();
+        this.site = other.getSite();
+        this.size = other.getSize();
+        this.type = other.getType();
+    }
 
     public String getId() {
         return id;

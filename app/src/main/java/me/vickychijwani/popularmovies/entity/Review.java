@@ -1,5 +1,7 @@
 package me.vickychijwani.popularmovies.entity;
 
+import android.support.annotation.NonNull;
+
 import org.parceler.Parcel;
 import org.parceler.Parcels;
 
@@ -16,6 +18,17 @@ public class Review extends RealmObject {
     private String author;
     private String content;
     private String url;
+
+
+
+    public Review() {}
+
+    public Review(@NonNull Review other) {
+        this.id = other.getId();
+        this.author = other.getAuthor();
+        this.content = other.getContent();
+        this.url = other.getUrl();
+    }
 
     public String getId() {
         return id;

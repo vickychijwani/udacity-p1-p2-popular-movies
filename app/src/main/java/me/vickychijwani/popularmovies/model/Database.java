@@ -1,8 +1,12 @@
 package me.vickychijwani.popularmovies.model;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
@@ -16,12 +20,29 @@ class Database {
 
     private static final String TAG = "Database";
 
+    public void loadFavoriteMovies(final ReadCallback<List<Movie>> callback) {
+        final RealmResults<Movie> results = getRealm().where(Movie.class)
+                .equalTo("isFavorite", true)
+                .findAllAsync();
+        results.addChangeListener(new RealmChangeListener() {
+            @Override
+            public void onChange() {
+                results.removeChangeListener(this);
+                List<Movie> favorites = new ArrayList<>(results.size());
+                for (Movie movie : results) {
+                    favorites.add(movie);
+                }
+                callback.done(favorites);
+            }
+        });
+    }
+
     public void loadMovie(int id, ReadCallback<Movie> callback) {
         loadById(new StringOrInt(id), callback, Movie.class);
     }
 
     @UiThread
-    public <T extends RealmObject> void createOrUpdateEntity(final T object,
+    public <T extends RealmObject> void createOrUpdateEntity(@NonNull final T object,
                                                              WriteCallback callback) {
         // TODO add error handling
         Realm realm = getRealm();
@@ -34,7 +55,7 @@ class Database {
     }
 
     @UiThread
-    public <T extends RealmObject> void createOrUpdateEntity(final Iterable<T> objects,
+    public <T extends RealmObject> void createOrUpdateEntity(@NonNull final Iterable<T> objects,
                                                              WriteCallback callback) {
         Realm realm = getRealm();
         realm.executeTransaction(new Realm.Transaction() {
@@ -60,7 +81,7 @@ class Database {
             public void onChange() {
                 result.removeChangeListener(this);
                 if (! result.isEmpty()) {
-                    callback.done(AppUtil.makeCopyByParcelling(result.first(), clazz));
+                    callback.done(AppUtil.copy(result.first(), clazz));
                 } else {
                     callback.failed();
                 }
@@ -72,14 +93,17 @@ class Database {
         return Realm.getDefaultInstance();
     }
 
-    public interface ReadCallback<T> {
-        void done(T result);    // query result found
-        void failed();          // query result not found
+    public static abstract class ReadCallback<T> {
+        public abstract void done(T result);    // query result found
+        public void failed() {}                 // query result not found
     }
 
     public static abstract class WriteCallback extends Realm.Transaction.Callback {
         @UiThread
-        public abstract void done();
+        public void done() {}
+
+        @UiThread
+        public void failed(Exception e) {}
 
         @Override @UiThread
         public void onSuccess() {
@@ -89,6 +113,7 @@ class Database {
         @Override
         public void onError(Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));
+            failed(e);
         }
     }
 

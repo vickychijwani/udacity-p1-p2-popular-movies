@@ -7,7 +7,6 @@ import android.os.StrictMode;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
-import me.vickychijwani.popularmovies.model.Database;
 import me.vickychijwani.popularmovies.model.Model;
 
 public class PopularMoviesApplication extends Application {
@@ -15,29 +14,29 @@ public class PopularMoviesApplication extends Application {
     private static final int DB_SCHEMA_VERSION = 1;
     private static final String TAG = "Application";
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private Model mModel;
-
-    @SuppressWarnings("FieldCanBeLocal")
-    private Database mDatabase;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        enableStrictMode();
 
         // initialize the database
-        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder(this)
+        RealmConfiguration.Builder realmConfigurationBuilder = new RealmConfiguration.Builder(this)
                 .name(Realm.DEFAULT_REALM_NAME)
-                .schemaVersion(DB_SCHEMA_VERSION)
-                .build();
+                .schemaVersion(DB_SCHEMA_VERSION);
+        if (BuildConfig.DEBUG) {
+            realmConfigurationBuilder.deleteRealmIfMigrationNeeded();
+        }
+        RealmConfiguration realmConfiguration = realmConfigurationBuilder.build();
         Realm.setDefaultConfiguration(realmConfiguration);
-        mDatabase = new Database();
 
         // setup the Model so it can listen for and handle requests for data
-        mModel = new Model(mDatabase);
+        // hold a reference to it, to save it from GC
+        mModel = new Model();
 
         DataBusProvider.getBus().register(this);
+        enableStrictMode();
     }
 
     /**

@@ -6,6 +6,7 @@
     <string name="sort_by">Sort By</string>
     <string name="sort_popularity">Sort by Most Popular</string>
     <string name="sort_rating">Sort by Highest Rated</string>
+    <string name="filter_favorites">Show only Favorites</string>
 
     <string name="title_activity_movie_details">Movie</string>
     <string name="rating_denominator">/10</string>

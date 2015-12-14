@@ -118,6 +118,9 @@ public class MoviesFragment extends BaseFragment implements
             case R.id.action_sort_rating:
                 setSortCriteria(MovieResults.SortCriteria.RATING);
                 return true;
+            case R.id.action_filter_favorites:
+                setSortCriteria(MovieResults.SortCriteria.FAVORITES);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

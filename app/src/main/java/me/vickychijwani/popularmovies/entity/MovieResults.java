@@ -3,7 +3,7 @@ package me.vickychijwani.popularmovies.entity;
 public class MovieResults extends Results<Movie> {
 
     public enum SortCriteria {
-        POPULARITY("popularity.desc"), RATING("vote_average.desc");
+        POPULARITY("popularity.desc"), RATING("vote_average.desc"), FAVORITES("favorites");
         public final String str;
         SortCriteria(String str) {
             this.str = str;

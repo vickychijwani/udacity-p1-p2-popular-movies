@@ -1,10 +1,13 @@
 package me.vickychijwani.popularmovies.util;
 
 import android.graphics.Color;
+import android.util.Log;
 
-import org.parceler.Parcels;
+import java.lang.reflect.InvocationTargetException;
 
 public class AppUtil {
+
+    private static final String TAG = "AppUtil";
 
     public static int multiplyColor(int srcColor, float factor) {
         int alpha = Color.alpha(srcColor);
@@ -14,9 +17,25 @@ public class AppUtil {
         return Color.argb(alpha, red, green, blue);
     }
 
-    public static <T> T makeCopyByParcelling(T obj, Class<T> clazz) {
-        // make a copy by serializing and deserializing the object
-        return Parcels.unwrap(Parcels.wrap(clazz, obj));
+    /**
+     * Tries to copy an object using a copy constructor.
+     */
+    public static <T> T copy(T obj, Class<T> clazz) {
+        try {
+            return clazz.getConstructor(clazz).newInstance(obj);
+        } catch (NoSuchMethodException e) {
+            Log.e(TAG, Log.getStackTraceString(e));
+            return null;
+        } catch (IllegalAccessException e) {
+            Log.e(TAG, Log.getStackTraceString(e));
+            return null;
+        } catch (InvocationTargetException e) {
+            Log.e(TAG, Log.getStackTraceString(e));
+            return null;
+        } catch (InstantiationException e) {
+            Log.e(TAG, Log.getStackTraceString(e));
+            return null;
+        }
     }
 
 }

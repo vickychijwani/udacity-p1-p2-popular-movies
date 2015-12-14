@@ -7,59 +7,85 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 
+import com.squareup.otto.Subscribe;
+
+import butterknife.Bind;
+import butterknife.BindDrawable;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
+import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
+import me.vickychijwani.popularmovies.event.events.UpdateMovieEvent;
 import me.vickychijwani.popularmovies.util.AppUtil;
 
 public class MovieDetailsActivity extends BaseActivity implements
-        MovieDetailsFragment.PaletteCallback {
+        MovieDetailsFragment.PaletteCallback, View.OnClickListener {
 
-    private Toolbar mToolbar;
-    private Drawable mUpArrow;
+    @Bind(R.id.toolbar)                     Toolbar mToolbar;
+    @Bind(R.id.favorite)                    FloatingActionButton mFavoriteBtn;
+
+    @BindDrawable(R.drawable.arrow_left)    Drawable mUpArrow;
+    @BindDrawable(R.drawable.star_outline)  Drawable mStarOutline;
+    @BindDrawable(R.drawable.star)          Drawable mStarFilled;
+
+    private Movie mMovie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // credits for up arrow color tinting: http://stackoverflow.com/a/26837072/504611
-        mUpArrow = getResources().getDrawable(R.drawable.arrow_left);
-        if (mUpArrow != null) {
-            int upArrowColor = getResources().getColor(android.R.color.white);
-            mUpArrow.setColorFilter(upArrowColor, PorterDuff.Mode.SRC_ATOP);
-            getSupportActionBar().setHomeAsUpIndicator(mUpArrow);
-        }
+        int upArrowColor = getResources().getColor(android.R.color.white);
+        mUpArrow.setColorFilter(upArrowColor, PorterDuff.Mode.SRC_ATOP);
+        getSupportActionBar().setHomeAsUpIndicator(mUpArrow);
 
-        Movie movie = Movie.fromParcelable(getIntent().getExtras().getParcelable(BundleKeys.MOVIE));
+        mMovie = Movie.fromParcelable(getIntent().getExtras().getParcelable(BundleKeys.MOVIE));
         //noinspection ConstantConditions
-        getSupportActionBar().setTitle(movie.getTitle());
+        getSupportActionBar().setTitle(mMovie.getTitle());
 
         if (savedInstanceState == null) {
-            Fragment detailsFragment = MovieDetailsFragment.newInstance(movie);
+            Fragment detailsFragment = MovieDetailsFragment.newInstance(mMovie);
             getSupportFragmentManager()
                     .beginTransaction()
                     .add(R.id.fragment_container, detailsFragment,
                             MovieDetailsFragment.class.getSimpleName())
                     .commit();
         }
+    }
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
+    @OnClick(R.id.favorite)
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.favorite && mMovie != null) {
+            Movie movieCopy = AppUtil.copy(mMovie, Movie.class);
+            if (movieCopy != null) {
+                movieCopy.setFavorite(!movieCopy.isFavorite());
+                getDataBus().post(new UpdateMovieEvent(movieCopy));
+            }
+        }
+    }
+
+    @Subscribe
+    public void onMovieLoadedEvent(MovieLoadedEvent event) {
+        mMovie = event.movie;
+        updateFavoriteBtn();
+    }
+
+    private void updateFavoriteBtn() {
+        mFavoriteBtn.setImageDrawable(mMovie.isFavorite() ? mStarFilled : mStarOutline);
     }
 
     @Override

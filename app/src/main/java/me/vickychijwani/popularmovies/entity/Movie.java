@@ -1,6 +1,7 @@
 package me.vickychijwani.popularmovies.entity;
 
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -36,8 +37,38 @@ public class Movie extends RealmObject {
     private Date releaseDate;
 
     // relationships
-    private RealmList<Review> reviews;
-    private RealmList<Video> videos;
+    private RealmList<Review> reviews = new RealmList<>();
+    private RealmList<Video> videos = new RealmList<>();
+
+    // transient fields are not serialized / deserialized by Gson
+    private transient boolean isFavorite = false;
+
+
+
+    public Movie() {}
+
+    public Movie(@NonNull Movie other) {
+        this.id = other.getId();
+        this.title = other.getTitle();
+        this.posterPath = other.getPosterPath();
+        this.backdropPath = other.getBackdropPath();
+        this.synopsis = other.getSynopsis();
+        this.rating = other.getRating();
+        this.releaseDate = other.getReleaseDate();
+        this.isFavorite = other.isFavorite();
+        this.reviews = new RealmList<>();
+        if (other.reviews != null) {
+            for (Review review : other.reviews) {
+                this.reviews.add(new Review(review));
+            }
+        }
+        this.videos = new RealmList<>();
+        if (other.videos != null) {
+            for (Video video : other.videos) {
+                this.videos.add(new Video(video));
+            }
+        }
+    }
 
     public static List<Video> getTrailers(Movie movie) {
         List<Video> trailers = new ArrayList<>();
@@ -147,6 +178,14 @@ public class Movie extends RealmObject {
     @ParcelPropertyConverter(Video.RealmListParcelConverter.class)
     public void setVideos(RealmList<Video> videos) {
         this.videos = videos;
+    }
+
+    public boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        isFavorite = favorite;
     }
 
 }

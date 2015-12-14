@@ -12,6 +12,7 @@ import android.view.ViewTreeObserver;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
@@ -36,6 +37,8 @@ public class MovieDetailsFragment extends BaseFragment {
 
     private static final String TAG = "MovieDetailsFragment";
 
+    @Bind(R.id.scroll_view)         ScrollView mScrollView;
+    @Bind(R.id.scroll_view_layout)  ViewGroup mScrollViewLayout;
     @Bind(R.id.backdrop)            ImageView mBackdrop;
     @Bind(R.id.poster)              ImageView mPoster;
     @Bind(R.id.title)               TextView mTitle;
@@ -96,6 +99,11 @@ public class MovieDetailsFragment extends BaseFragment {
             @Override
             public boolean onPreDraw() {
                 view.getViewTreeObserver().removeOnPreDrawListener(this);
+                if (mScrollViewLayout.getHeight() < mScrollView.getHeight()) {
+                    ViewGroup.LayoutParams lp = mScrollViewLayout.getLayoutParams();
+                    lp.height = mScrollView.getHeight();
+                    mScrollViewLayout.setLayoutParams(lp);
+                }
                 animateContent();
                 return true;
             }
