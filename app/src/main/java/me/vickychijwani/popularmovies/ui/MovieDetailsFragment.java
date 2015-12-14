@@ -29,7 +29,8 @@ import me.vickychijwani.popularmovies.entity.Review;
 import me.vickychijwani.popularmovies.entity.Video;
 import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
-import me.vickychijwani.popularmovies.util.Util;
+import me.vickychijwani.popularmovies.util.DeviceUtil;
+import me.vickychijwani.popularmovies.util.TMDbUtil;
 
 public class MovieDetailsFragment extends BaseFragment {
 
@@ -66,9 +67,9 @@ public class MovieDetailsFragment extends BaseFragment {
 
         Picasso picasso = Picasso.with(getActivity());
 
-        int backdropWidth = Util.getScreenWidth(getActivity());
+        int backdropWidth = DeviceUtil.getScreenWidth(getActivity());
         int backdropHeight = getResources().getDimensionPixelSize(R.dimen.details_backdrop_height);
-        picasso.load(Util.buildBackdropUrl(movie.getBackdropPath(), backdropWidth))
+        picasso.load(TMDbUtil.buildBackdropUrl(movie.getBackdropPath(), backdropWidth))
                 .resize(backdropWidth, backdropHeight)
                 .centerCrop()
                 .transform(PaletteTransformation.instance())
@@ -76,7 +77,7 @@ public class MovieDetailsFragment extends BaseFragment {
 
         int posterWidth = getResources().getDimensionPixelSize(R.dimen.details_poster_width);
         int posterHeight = getResources().getDimensionPixelSize(R.dimen.details_poster_height);
-        picasso.load(Util.buildPosterUrl(movie.getPosterPath(), posterWidth))
+        picasso.load(TMDbUtil.buildPosterUrl(movie.getPosterPath(), posterWidth))
                 .resize(posterWidth, posterHeight)
                 .centerCrop()
                 .into(mPoster);

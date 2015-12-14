@@ -33,7 +33,7 @@ import me.vickychijwani.popularmovies.entity.MovieResults;
 import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
 import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
-import me.vickychijwani.popularmovies.util.Util;
+import me.vickychijwani.popularmovies.util.DeviceUtil;
 
 public class MoviesFragment extends BaseFragment implements
         MoviesAdapter.MovieViewHolder.ClickListener,
@@ -65,7 +65,7 @@ public class MoviesFragment extends BaseFragment implements
         mMoviesListView.setHasFixedSize(true);
 
         // compute optimal number of columns based on available width
-        int screenWidth = Util.getScreenWidth(activity);
+        int screenWidth = DeviceUtil.getScreenWidth(activity);
         int optimalColumnCount = Math.round(screenWidth / DESIRED_GRID_COLUMN_WIDTH_DP);
         int actualPosterViewWidth = screenWidth / optimalColumnCount;
 

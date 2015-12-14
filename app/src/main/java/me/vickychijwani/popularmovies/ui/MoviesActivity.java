@@ -1,12 +1,11 @@
 package me.vickychijwani.popularmovies.ui;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import me.vickychijwani.popularmovies.R;
 
-public class MoviesActivity extends AppCompatActivity {
+public class MoviesActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

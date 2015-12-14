@@ -1,11 +1,8 @@
 package me.vickychijwani.popularmovies.model;
 
-import android.os.Parcelable;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 import android.util.Log;
-
-import org.parceler.Parcels;
 
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
@@ -13,8 +10,9 @@ import io.realm.RealmObject;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import me.vickychijwani.popularmovies.entity.Movie;
+import me.vickychijwani.popularmovies.util.AppUtil;
 
-public class Database {
+class Database {
 
     private static final String TAG = "Database";
 
@@ -62,19 +60,12 @@ public class Database {
             public void onChange() {
                 result.removeChangeListener(this);
                 if (! result.isEmpty()) {
-                    callback.done(getDetachedCopy(result.first(), clazz));
+                    callback.done(AppUtil.makeCopyByParcelling(result.first(), clazz));
                 } else {
                     callback.failed();
                 }
             }
         });
-    }
-
-    // hack to detach the given object from the realm db
-    private <T extends RealmObject> T getDetachedCopy(T obj, Class<T> clazz) {
-        // make a detached copy by serializing and deserializing the object
-        Parcelable parcelable = Parcels.wrap(clazz, obj);
-        return Parcels.unwrap(parcelable);
     }
 
     private Realm getRealm() {

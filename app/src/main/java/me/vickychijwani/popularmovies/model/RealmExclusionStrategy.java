@@ -1,4 +1,4 @@
-package me.vickychijwani.popularmovies.network;
+package me.vickychijwani.popularmovies.model;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;

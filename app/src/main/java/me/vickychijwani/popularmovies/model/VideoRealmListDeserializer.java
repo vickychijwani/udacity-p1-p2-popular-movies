@@ -1,4 +1,4 @@
-package me.vickychijwani.popularmovies.network;
+package me.vickychijwani.popularmovies.model;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;

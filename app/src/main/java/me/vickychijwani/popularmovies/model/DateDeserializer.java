@@ -1,4 +1,4 @@
-package me.vickychijwani.popularmovies.network;
+package me.vickychijwani.popularmovies.model;
 
 import android.annotation.SuppressLint;
 import android.util.Log;

@@ -1,4 +1,4 @@
-package me.vickychijwani.popularmovies.network;
+package me.vickychijwani.popularmovies.model;
 
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.entity.MovieResults;

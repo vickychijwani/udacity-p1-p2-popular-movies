@@ -1,16 +1,11 @@
 package me.vickychijwani.popularmovies.util;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.WindowManager;
 
 import me.vickychijwani.popularmovies.BuildConfig;
 
-public class Util {
+public class TMDbUtil {
 
     private static final Uri TMDB_IMAGE_BASE_URI = Uri.parse("http://image.tmdb.org/t/p/");
 
@@ -53,16 +48,8 @@ public class Util {
         return buildImageUrl(posterPath, computeNextLowestPosterWidth(posterWidth));
     }
 
-    public static String buildPosterUrl(String posterPath, TMDbPosterWidth tmdbPosterWidth) {
-        return buildImageUrl(posterPath, tmdbPosterWidth);
-    }
-
     public static String buildBackdropUrl(String backdropPath, int backdropWidth) {
         return buildImageUrl(backdropPath, computeNextLowestBackdropWidth(backdropWidth));
-    }
-
-    public static String buildBackdropUrl(String backdropPath, TMDbBackdropWidth tmdbBackdropWidth) {
-        return buildImageUrl(backdropPath, tmdbBackdropWidth);
     }
 
     private static <T extends TMDbImageWidth> String buildImageUrl(String imagePath, T tmdbImageWidth) {
@@ -72,22 +59,6 @@ public class Util {
         String relativePath = tmdbImageWidth.getWidthString() + "/" + imagePath;
         return Uri.withAppendedPath(TMDB_IMAGE_BASE_URI, relativePath).toString();
     }
-
-    public static int getScreenWidth(@NonNull Context context) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        wm.getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.widthPixels;
-    }
-
-    public static int multiplyColor(int srcColor, float factor) {
-        int alpha = Color.alpha(srcColor);
-        int red = (int) (Color.red(srcColor) * factor);
-        int green = (int) (Color.green(srcColor) * factor);
-        int blue = (int) (Color.blue(srcColor) * factor);
-        return Color.argb(alpha, red, green, blue);
-    }
-
 
 
     // private methods

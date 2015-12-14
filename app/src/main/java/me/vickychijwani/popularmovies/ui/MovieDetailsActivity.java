@@ -8,16 +8,15 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.view.animation.AccelerateInterpolator;
 
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
-import me.vickychijwani.popularmovies.util.Util;
+import me.vickychijwani.popularmovies.util.AppUtil;
 
-public class MovieDetailsActivity extends AppCompatActivity implements
+public class MovieDetailsActivity extends BaseActivity implements
         MovieDetailsFragment.PaletteCallback {
 
     private Toolbar mToolbar;
@@ -73,7 +72,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements
 
         int newPrimaryColor = vibrant.getRgb();
         final int newTitleTextColor = vibrant.getTitleTextColor();
-        int newPrimaryDarkColor = Util.multiplyColor(newPrimaryColor, 0.8f);
+        int newPrimaryDarkColor = AppUtil.multiplyColor(newPrimaryColor, 0.8f);
 
         int currentPrimaryColor = getResources().getColor(R.color.colorPrimary);
         startColorAnimation(currentPrimaryColor, newPrimaryColor, new ColorUpdateListener() {

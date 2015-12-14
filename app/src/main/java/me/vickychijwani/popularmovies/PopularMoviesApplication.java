@@ -8,7 +8,7 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
 import me.vickychijwani.popularmovies.model.Database;
-import me.vickychijwani.popularmovies.network.NetworkService;
+import me.vickychijwani.popularmovies.model.Model;
 
 public class PopularMoviesApplication extends Application {
 
@@ -16,7 +16,7 @@ public class PopularMoviesApplication extends Application {
     private static final String TAG = "Application";
 
     @SuppressWarnings("FieldCanBeLocal")
-    private NetworkService mNetworkService;
+    private Model mModel;
 
     @SuppressWarnings("FieldCanBeLocal")
     private Database mDatabase;
@@ -34,9 +34,8 @@ public class PopularMoviesApplication extends Application {
         Realm.setDefaultConfiguration(realmConfiguration);
         mDatabase = new Database();
 
-        // start the NetworkService so it can listen for and handle data request events
-        mNetworkService = new NetworkService(mDatabase);
-        mNetworkService.start();
+        // setup the Model so it can listen for and handle requests for data
+        mModel = new Model(mDatabase);
 
         DataBusProvider.getBus().register(this);
     }

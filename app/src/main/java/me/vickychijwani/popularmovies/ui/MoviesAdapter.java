@@ -17,7 +17,7 @@ import butterknife.ButterKnife;
 import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
-import me.vickychijwani.popularmovies.util.Util;
+import me.vickychijwani.popularmovies.util.TMDbUtil;
 
 final class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHolder> {
 
@@ -55,7 +55,7 @@ final class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHo
     public void onBindViewHolder(MovieViewHolder holder, int position) {
         Movie movie = mMovies.get(position);
         mPicasso
-                .load(Util.buildPosterUrl(movie.getPosterPath(), mPosterWidth))
+                .load(TMDbUtil.buildPosterUrl(movie.getPosterPath(), mPosterWidth))
                 .resize(mPosterWidth, mPosterHeight)
                 .centerCrop()
                 .into(holder.mPoster);

@@ -1,4 +1,4 @@
-package me.vickychijwani.popularmovies.network;
+package me.vickychijwani.popularmovies.model;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -22,20 +22,18 @@ import me.vickychijwani.popularmovies.entity.MovieResults;
 import me.vickychijwani.popularmovies.entity.Review;
 import me.vickychijwani.popularmovies.entity.Video;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
-import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
 import me.vickychijwani.popularmovies.event.events.CancelAllEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
-import me.vickychijwani.popularmovies.model.Database;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.GsonConverterFactory;
 import retrofit.Response;
 import retrofit.Retrofit;
 
-public class NetworkService {
+public class Model {
 
     private static final String TAG = "NetworkService";
     private static final String BASE_URL = "http://api.themoviedb.org/3/";
@@ -45,7 +43,7 @@ public class NetworkService {
     private final String mApiKey;
     private final Map<String, Call> mPendingCalls = new HashMap<>();
 
-    public NetworkService(@NonNull Database database) {
+    public Model(@NonNull Database database) {
         mDatabase = database;
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(Date.class, new DateDeserializer())
@@ -59,15 +57,8 @@ public class NetworkService {
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         mApiService = retrofit.create(MovieDBApiService.class);
-        mApiKey = "YOUR_API_KEY_HERE";
-    }
-
-    public void start() {
+        mApiKey = "075c3ac2845f0a71e38797ec6f57cdfb";
         getDataBus().register(this);
-    }
-
-    public void stop() {
-        getDataBus().unregister(this);
     }
 
     @Subscribe
@@ -76,13 +67,13 @@ public class NetworkService {
         enqueue(event.getClass().getSimpleName(), call, new ApiCallback<MovieResults>() {
             @Override
             public void onApiResponse(MovieResults movieResults, Retrofit retrofit) {
-                List<Movie> movies = movieResults.getResults();
-                getDataBus().post(new MoviesLoadedEvent(movies));
-            }
-
-            @Override
-            public void onApiFailure(Throwable throwable) {
-                getDataBus().post(new ApiErrorEvent(event, throwable));
+                final List<Movie> movies = movieResults.getResults();
+                mDatabase.createOrUpdateEntity(movies, new Database.WriteCallback() {
+                    @Override
+                    public void done() {
+                        getDataBus().post(new MoviesLoadedEvent(movies));
+                    }
+                });
             }
         });
     }
@@ -107,11 +98,6 @@ public class NetworkService {
                                 onLoadMovieEvent(event);
                             }
                         });
-                    }
-
-                    @Override
-                    public void onApiFailure(Throwable throwable) {
-                        getDataBus().post(new ApiErrorEvent(event, throwable));
                     }
                 });
             }
@@ -177,7 +163,8 @@ public class NetworkService {
         }
 
         public abstract void onApiResponse(T response, Retrofit retrofit);
-        public abstract void onApiFailure(Throwable throwable);
+
+        public void onApiFailure(Throwable throwable) {}
     }
 
     private Bus getDataBus() {
