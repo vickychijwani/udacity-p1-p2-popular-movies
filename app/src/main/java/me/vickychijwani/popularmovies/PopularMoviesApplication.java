@@ -42,11 +42,4 @@ public class PopularMoviesApplication extends Application {
         DataBusProvider.getBus().register(this);
     }
 
-    @Subscribe
-    public void onApiErrorEvent(ApiErrorEvent event) {
-        Log.e(TAG, String.format("Error while processing %1$s:\n%2$s",
-                event.sourceEvent.getClass().getSimpleName(),
-                Log.getStackTraceString(event.throwable)));
-    }
-
 }

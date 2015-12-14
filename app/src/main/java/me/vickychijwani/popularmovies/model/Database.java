@@ -23,7 +23,7 @@ public class Database {
     }
 
     @UiThread
-    public <T extends RealmObject> void createOrUpdateModel(final T object,
+    public <T extends RealmObject> void createOrUpdateEntity(final T object,
                                                              WriteCallback callback) {
         // TODO add error handling
         Realm realm = getRealm();
@@ -36,7 +36,7 @@ public class Database {
     }
 
     @UiThread
-    public <T extends RealmObject> void createOrUpdateModel(final Iterable<T> objects,
+    public <T extends RealmObject> void createOrUpdateEntity(final Iterable<T> objects,
                                                              WriteCallback callback) {
         Realm realm = getRealm();
         realm.executeTransaction(new Realm.Transaction() {

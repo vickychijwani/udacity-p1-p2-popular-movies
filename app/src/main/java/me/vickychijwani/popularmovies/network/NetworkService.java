@@ -75,15 +75,9 @@ public class NetworkService {
         Call<MovieResults> call = mApiService.fetchMovies(mApiKey, event.sortCriteria.str);
         enqueue(event.getClass().getSimpleName(), call, new ApiCallback<MovieResults>() {
             @Override
-            public void onApiResponse(Response<MovieResults> response, Retrofit retrofit) {
-                if (response.body() != null) {
-                    List<Movie> movies = response.body().getResults();
-                    getDataBus().post(new MoviesLoadedEvent(movies));
-                } else if (response.errorBody() != null) {
-                    try { Log.e(TAG, response.errorBody().string()); } catch (IOException ignored) {}
-                } else {
-                    Log.e(TAG, "response.body() and response.errorBody() are both null!");
-                }
+            public void onApiResponse(MovieResults movieResults, Retrofit retrofit) {
+                List<Movie> movies = movieResults.getResults();
+                getDataBus().post(new MoviesLoadedEvent(movies));
             }
 
             @Override
@@ -106,16 +100,13 @@ public class NetworkService {
                 Call<Movie> call = mApiService.fetchMovie(event.id, mApiKey);
                 enqueue(event.getClass().getSimpleName(), call, new ApiCallback<Movie>() {
                     @Override
-                    public void onApiResponse(Response<Movie> response, Retrofit retrofit) {
-                        if (response.body() != null) {
-                            Movie movie = response.body();
-                            mDatabase.createOrUpdateModel(movie, new Database.WriteCallback() {
-                                @Override
-                                public void done() {
-                                    onLoadMovieEvent(event);
-                                }
-                            });
-                        }
+                    public void onApiResponse(Movie movie, Retrofit retrofit) {
+                        mDatabase.createOrUpdateEntity(movie, new Database.WriteCallback() {
+                            @Override
+                            public void done() {
+                                onLoadMovieEvent(event);
+                            }
+                        });
                     }
 
                     @Override
@@ -168,7 +159,13 @@ public class NetworkService {
         @Override
         public void onResponse(Response<T> response, Retrofit retrofit) {
             removePendingCall(mCall);
-            onApiResponse(response, retrofit);
+            if (response.body() != null) {
+                onApiResponse(response.body(), retrofit);
+            } else if (response.errorBody() != null) {
+                try { Log.e(TAG, response.errorBody().string()); } catch (IOException ignored) {}
+            } else {
+                Log.e(TAG, "response.body() and response.errorBody() are both null!");
+            }
         }
 
         @Override
@@ -179,7 +176,7 @@ public class NetworkService {
             onApiFailure(throwable);
         }
 
-        public abstract void onApiResponse(Response<T> response, Retrofit retrofit);
+        public abstract void onApiResponse(T response, Retrofit retrofit);
         public abstract void onApiFailure(Throwable throwable);
     }
 
