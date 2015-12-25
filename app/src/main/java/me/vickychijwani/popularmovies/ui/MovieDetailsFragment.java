@@ -28,7 +28,6 @@ import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.entity.Review;
 import me.vickychijwani.popularmovies.entity.Video;
-import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.util.DeviceUtil;
 import me.vickychijwani.popularmovies.util.TMDbUtil;
@@ -109,8 +108,6 @@ public class MovieDetailsFragment extends BaseFragment {
             }
         });
 
-        getDataBus().post(new LoadMovieEvent(movie.getId()));
-
         return view;
     }
 
@@ -120,8 +117,9 @@ public class MovieDetailsFragment extends BaseFragment {
         List<Review> reviews = fullMovie.getReviews();
         List<Video> trailers = Movie.getTrailers(fullMovie);
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, String.format("Loaded %1$d reviews and %2$d trailers", reviews.size(),
-                    trailers.size()));
+            Log.d(TAG, String.format("%1$s: fav=%2$s reviews=%3$d trailers=%4$d",
+                    fullMovie.getTitle(), String.valueOf(fullMovie.isFavorite()),
+                    reviews.size(), trailers.size()));
         }
     }
 

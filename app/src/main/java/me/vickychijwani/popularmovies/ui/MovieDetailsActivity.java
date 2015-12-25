@@ -3,7 +3,6 @@ package me.vickychijwani.popularmovies.ui;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +10,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 
@@ -20,14 +20,18 @@ import butterknife.Bind;
 import butterknife.BindDrawable;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
+import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.event.events.UpdateMovieEvent;
 import me.vickychijwani.popularmovies.util.AppUtil;
 
 public class MovieDetailsActivity extends BaseActivity implements
         MovieDetailsFragment.PaletteCallback, View.OnClickListener {
+
+    private static final String TAG = "MovieDetailsActivity";
 
     @Bind(R.id.toolbar)                     Toolbar mToolbar;
     @Bind(R.id.favorite)                    FloatingActionButton mFavoriteBtn;
@@ -49,7 +53,7 @@ public class MovieDetailsActivity extends BaseActivity implements
 
         // credits for up arrow color tinting: http://stackoverflow.com/a/26837072/504611
         int upArrowColor = getResources().getColor(android.R.color.white);
-        mUpArrow.setColorFilter(upArrowColor, PorterDuff.Mode.SRC_ATOP);
+        AppUtil.tintDrawable(mUpArrow, upArrowColor);
         getSupportActionBar().setHomeAsUpIndicator(mUpArrow);
 
         mMovie = Movie.fromParcelable(getIntent().getExtras().getParcelable(BundleKeys.MOVIE));
@@ -64,6 +68,12 @@ public class MovieDetailsActivity extends BaseActivity implements
                             MovieDetailsFragment.class.getSimpleName())
                     .commit();
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        getDataBus().post(new LoadMovieEvent(mMovie.getId()));
     }
 
     @OnClick(R.id.favorite)
@@ -113,9 +123,7 @@ public class MovieDetailsActivity extends BaseActivity implements
             @Override
             public void onColorUpdate(int color) {
                 mToolbar.setTitleTextColor(newTitleTextColor);
-                if (mUpArrow != null) {
-                    mUpArrow.setColorFilter(newTitleTextColor, PorterDuff.Mode.SRC_IN);
-                }
+                AppUtil.tintDrawable(mUpArrow, newTitleTextColor);
             }
         });
 

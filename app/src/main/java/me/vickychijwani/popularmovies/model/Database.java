@@ -13,6 +13,7 @@ import io.realm.RealmChangeListener;
 import io.realm.RealmObject;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
+import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.util.AppUtil;
 
@@ -45,6 +46,9 @@ class Database {
     public <T extends RealmObject> void createOrUpdateEntity(@NonNull final T object,
                                                              WriteCallback callback) {
         // TODO add error handling
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Creating/updating " + object.getClass().getSimpleName());
+        }
         Realm realm = getRealm();
         realm.executeTransaction(new Realm.Transaction() {
             @Override @WorkerThread
@@ -57,6 +61,9 @@ class Database {
     @UiThread
     public <T extends RealmObject> void createOrUpdateEntity(@NonNull final Iterable<T> objects,
                                                              WriteCallback callback) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Creating/updating " + objects.getClass().getSimpleName());
+        }
         Realm realm = getRealm();
         realm.executeTransaction(new Realm.Transaction() {
             @Override @WorkerThread
@@ -66,9 +73,12 @@ class Database {
         }, callback);
     }
 
-    private <T extends RealmObject> void loadById(StringOrInt idStringOrInt,
+    private <T extends RealmObject> void loadById(final StringOrInt idStringOrInt,
                                                   final ReadCallback<T> callback,
                                                   final Class<T> clazz) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "[READ ] Load " + clazz.getSimpleName() + " with id = " + idStringOrInt.toString());
+        }
         RealmQuery<T> query = getRealm().where(clazz);
         if (idStringOrInt.hasString()) {
             query.equalTo("id", idStringOrInt.string);
@@ -81,9 +91,13 @@ class Database {
             public void onChange() {
                 result.removeChangeListener(this);
                 if (! result.isEmpty()) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(TAG, "[READ ] Success: " + clazz.getSimpleName() + " with id = " + idStringOrInt.toString());
+                    }
                     callback.done(AppUtil.copy(result.first(), clazz));
                 } else {
-                    callback.failed();
+                    callback.failed(new RuntimeException("No " + clazz.getSimpleName() +
+                            " found with id = " + idStringOrInt.toString()));
                 }
             }
         });
@@ -94,8 +108,13 @@ class Database {
     }
 
     public static abstract class ReadCallback<T> {
-        public abstract void done(T result);    // query result found
-        public void failed() {}                 // query result not found
+        // query result found
+        public abstract void done(T result);
+
+        // query result not found
+        public void failed(RuntimeException e) {
+            Log.e(TAG, "[READ ] Error:\n" + Log.getStackTraceString(e));
+        }
     }
 
     public static abstract class WriteCallback extends Realm.Transaction.Callback {
@@ -137,6 +156,11 @@ class Database {
 
         public boolean hasInt() {
             return this.integer != null;
+        }
+
+        @Override
+        public String toString() {
+            return hasString() ? this.string : String.valueOf(this.integer);
         }
     }
 

@@ -1,6 +1,9 @@
 package me.vickychijwani.popularmovies.util;
 
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.lang.reflect.InvocationTargetException;
@@ -15,6 +18,12 @@ public class AppUtil {
         int green = (int) (Color.green(srcColor) * factor);
         int blue = (int) (Color.blue(srcColor) * factor);
         return Color.argb(alpha, red, green, blue);
+    }
+
+    public static void tintDrawable(@Nullable Drawable drawable, int color) {
+        if (drawable != null) {
+            drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
     }
 
     /**
