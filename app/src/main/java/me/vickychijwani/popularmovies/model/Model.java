@@ -21,6 +21,7 @@ import me.vickychijwani.popularmovies.entity.MovieResults;
 import me.vickychijwani.popularmovies.entity.Review;
 import me.vickychijwani.popularmovies.entity.Video;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
+import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
 import me.vickychijwani.popularmovies.event.events.CancelAllEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
@@ -36,7 +37,7 @@ import retrofit.Retrofit;
 
 public class Model {
 
-    private static final String TAG = "NetworkService";
+    private static final String TAG = "Model";
     private static final String BASE_URL = "http://api.themoviedb.org/3/";
 
     private final Database mDatabase;
@@ -68,7 +69,7 @@ public class Model {
             mDatabase.loadFavoriteMovies(new Database.ReadCallback<List<Movie>>() {
                 @Override
                 public void done(List<Movie> favorites) {
-                    getDataBus().post(new MoviesLoadedEvent(favorites));
+                    getDataBus().post(new MoviesLoadedEvent(favorites, event.sortCriteria));
                 }
             });
         } else {
@@ -87,11 +88,16 @@ public class Model {
                             mDatabase.createOrUpdateEntity(movies, new Database.WriteCallback() {
                                 @Override
                                 public void done() {
-                                    getDataBus().post(new MoviesLoadedEvent(movies));
+                                    getDataBus().post(new MoviesLoadedEvent(movies, event.sortCriteria));
                                 }
                             });
                         }
                     });
+                }
+
+                @Override
+                public void onApiFailure(Throwable throwable) {
+                    getDataBus().post(new ApiErrorEvent(event, throwable));
                 }
             });
         }
@@ -115,6 +121,11 @@ public class Model {
                                     readMovieFromDb(event.id);
                                 }
                             });
+                        }
+
+                        @Override
+                        public void onApiFailure(Throwable throwable) {
+                            getDataBus().post(new ApiErrorEvent(event, throwable));
                         }
                     });
                 }

@@ -66,7 +66,7 @@ public class Review extends RealmObject {
             me.vickychijwani.popularmovies.entity.RealmListParcelConverter<Review> {
         @Override
         public void itemToParcel(Review input, android.os.Parcel parcel) {
-            parcel.writeParcelable(Parcels.wrap(input), 0);
+            parcel.writeParcelable(Parcels.wrap(Review.class, input), 0);
         }
 
         @Override

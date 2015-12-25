@@ -91,7 +91,7 @@ public class Video extends RealmObject {
             me.vickychijwani.popularmovies.entity.RealmListParcelConverter<Video> {
         @Override
         public void itemToParcel(Video input, android.os.Parcel parcel) {
-            parcel.writeParcelable(Parcels.wrap(input), 0);
+            parcel.writeParcelable(Parcels.wrap(Video.class, input), 0);
         }
 
         @Override

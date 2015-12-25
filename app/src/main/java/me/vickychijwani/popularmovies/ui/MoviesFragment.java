@@ -145,9 +145,8 @@ public class MoviesFragment extends BaseFragment implements
 
     public void setSortCriteria(MovieResults.SortCriteria criteria) {
         if (mCurrentSortCriteria != criteria) {
-            mCurrentSortCriteria = criteria;
             mSwipeRefreshLayout.setRefreshing(true);
-            onRefresh();
+            getDataBus().post(new LoadMoviesEvent(criteria));
         }
     }
 
@@ -157,12 +156,12 @@ public class MoviesFragment extends BaseFragment implements
     }
 
     public void stopRefreshing() {
-        // cancel all pending and in-flight requests, if any, to conserve resources
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Subscribe
     public void onMostPopularMoviesLoadedEvent(MoviesLoadedEvent event) {
+        mCurrentSortCriteria = event.sortCriteria;
         showMovies(event.movies);
     }
 
@@ -176,12 +175,12 @@ public class MoviesFragment extends BaseFragment implements
         mMovies.clear();
         mMovies.addAll(movies);
         mMoviesAdapter.notifyDataSetChanged();
-        mSwipeRefreshLayout.setRefreshing(false);
+        stopRefreshing();
     }
 
     @Subscribe
     public void onApiErrorEvent(ApiErrorEvent event) {
-        if (getView() != null) {
+        if (event.sourceEvent instanceof LoadMoviesEvent && getView() != null) {
             Snackbar.make(getView(), R.string.api_error, Snackbar.LENGTH_LONG).show();
         }
     }
