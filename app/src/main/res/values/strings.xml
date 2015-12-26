@@ -10,6 +10,8 @@
 
     <string name="title_activity_movie_details">Movie</string>
     <string name="rating_denominator">/10</string>
+    <string name="trailers">Trailers</string>
+    <string name="reviews">Reviews</string>
 
     <string name="title_activity_review">Review</string>
 

@@ -117,11 +117,26 @@
             tools:text="With the nation of Panem in a full scale war, Katniss confronts President Snow in the final showdown. Teamed with a group of her closest friends – including Gale, Finnick, and Peeta – Katniss goes off on a mission with the unit from District 13 as they risk their lives to stage an assassination attempt on President Snow who has become increasingly obsessed with destroying her. The mortal traps, enemies, and moral choices that await Katniss will challenge her more than any arena she faced in The Hunger Games."
             />
 
+        <TextView
+            android:id="@+id/trailers_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/synopsis"
+            android:layout_marginEnd="@dimen/margin_large"
+            android:layout_marginLeft="@dimen/margin_large"
+            android:layout_marginRight="@dimen/margin_large"
+            android:layout_marginStart="@dimen/margin_large"
+            android:layout_marginTop="@dimen/margin_default"
+            android:paddingTop="@dimen/margin_large"
+            android:text="@string/trailers"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            />
+
         <HorizontalScrollView
             android:id="@+id/trailers_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/synopsis"
+            android:layout_below="@id/trailers_header"
             android:layout_marginTop="@dimen/margin_large"
             tools:ignore="RtlHardcoded,RtlSymmetry">
 
@@ -136,11 +151,26 @@
 
         </HorizontalScrollView>
 
+        <TextView
+            android:id="@+id/reviews_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/trailers_container"
+            android:layout_marginEnd="@dimen/margin_large"
+            android:layout_marginLeft="@dimen/margin_large"
+            android:layout_marginRight="@dimen/margin_large"
+            android:layout_marginStart="@dimen/margin_large"
+            android:layout_marginTop="@dimen/margin_default"
+            android:paddingTop="@dimen/margin_large"
+            android:text="@string/reviews"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            />
+
         <LinearLayout
             android:id="@+id/reviews"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/trailers_container"
+            android:layout_below="@id/reviews_header"
             android:layout_marginTop="@dimen/margin_default"
             android:orientation="vertical"
             />
