@@ -45,7 +45,9 @@ public class MovieDetailsFragment extends BaseFragment {
     @Bind(R.id.rating)              TextView mRating;
     @Bind(R.id.rating_container)    ViewGroup mRatingContainer;
     @Bind(R.id.synopsis)            TextView mSynopsis;
+    @Bind(R.id.trailers_header)     TextView mTrailersHeader;
     @Bind(R.id.trailers)            ViewGroup mTrailersView;
+    @Bind(R.id.reviews_header)      TextView mReviewsHeader;
     @Bind(R.id.reviews)             ViewGroup mReviewsView;
 
     private Movie mMovie;
@@ -166,7 +168,8 @@ public class MovieDetailsFragment extends BaseFragment {
 
     private void animateContent() {
         View[] animatedViews = new View[] {
-                mTitle, mReleaseDate, mRatingContainer, mSynopsis
+                mTitle, mReleaseDate, mRatingContainer, mSynopsis,
+                mTrailersHeader, mTrailersView, mReviewsHeader, mReviewsView
         };
         Interpolator interpolator = new DecelerateInterpolator();
         for (int i = 0; i < animatedViews.length; ++i) {
