@@ -3,6 +3,8 @@ package me.vickychijwani.popularmovies.entity;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringDef;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.parceler.Parcel;
 import org.parceler.Parcels;
 
@@ -32,6 +34,7 @@ public class Video extends RealmObject {
     private String id;
     private String name;
     @Site private String site;
+    @SerializedName("key") private String videoId;
     private int size;
     @Type private String type;
 
@@ -40,12 +43,32 @@ public class Video extends RealmObject {
     public Video() {}
 
     public Video(@NonNull Video other) {
-        this.id = other.getId();
-        this.name = other.getName();
-        this.site = other.getSite();
-        this.size = other.getSize();
-        this.type = other.getType();
+        this.setId(other.getId());
+        this.setName(other.getName());
+        this.setSite(other.getSite());
+        this.setVideoId(other.getVideoId());
+        this.setSize(other.getSize());
+        this.setType(other.getType());
     }
+
+    public static String getUrl(@NonNull Video video) {
+        if (SITE_YOUTUBE.equals(video.getSite())) {
+            return String.format("http://www.youtube.com/watch?v=%1$s", video.getVideoId());
+        } else {
+            throw new UnsupportedOperationException("Only YouTube is supported!");
+        }
+    }
+
+    public static String getThumbnailUrl(@NonNull Video video) {
+        if (SITE_YOUTUBE.equals(video.getSite())) {
+            return String.format("http://img.youtube.com/vi/%1$s/0.jpg", video.getVideoId());
+        } else {
+            throw new UnsupportedOperationException("Only YouTube is supported!");
+        }
+    }
+
+
+
 
     public String getId() {
         return id;
@@ -69,6 +92,14 @@ public class Video extends RealmObject {
 
     public void setSite(@Site String site) {
         this.site = site;
+    }
+
+    public String getVideoId() {
+        return videoId;
+    }
+
+    public void setVideoId(String videoId) {
+        this.videoId = videoId;
     }
 
     public int getSize() {

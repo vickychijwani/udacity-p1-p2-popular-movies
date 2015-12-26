@@ -6,7 +6,6 @@ import android.os.StrictMode;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import me.vickychijwani.popularmovies.event.DataBusProvider;
 import me.vickychijwani.popularmovies.model.Model;
 
 public class PopularMoviesApplication extends Application {
@@ -35,7 +34,6 @@ public class PopularMoviesApplication extends Application {
         // hold a reference to it, to save it from GC
         mModel = new Model();
 
-        DataBusProvider.getBus().register(this);
         enableStrictMode();
     }
 

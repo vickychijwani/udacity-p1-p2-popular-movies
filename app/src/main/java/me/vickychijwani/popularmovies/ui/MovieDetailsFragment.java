@@ -1,6 +1,8 @@
 package me.vickychijwani.popularmovies.ui;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.graphics.Palette;
@@ -32,7 +34,7 @@ import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.util.DeviceUtil;
 import me.vickychijwani.popularmovies.util.TMDbUtil;
 
-public class MovieDetailsFragment extends BaseFragment {
+public class MovieDetailsFragment extends BaseFragment implements View.OnClickListener {
 
     private static final String TAG = "MovieDetailsFragment";
 
@@ -45,6 +47,9 @@ public class MovieDetailsFragment extends BaseFragment {
     @Bind(R.id.rating)              TextView mRating;
     @Bind(R.id.rating_container)    ViewGroup mRatingContainer;
     @Bind(R.id.synopsis)            TextView mSynopsis;
+    @Bind(R.id.trailers_container)  ViewGroup mTrailersContainer;
+
+    private Movie mMovie;
 
     public MovieDetailsFragment() {}
 
@@ -62,8 +67,8 @@ public class MovieDetailsFragment extends BaseFragment {
         final View view = inflater.inflate(R.layout.fragment_movie_details, container, false);
         ButterKnife.bind(this, view);
 
-        Movie movie = Movie.fromParcelable(getArguments().getParcelable(BundleKeys.MOVIE));
-        if (movie == null) {
+        mMovie = Movie.fromParcelable(getArguments().getParcelable(BundleKeys.MOVIE));
+        if (mMovie == null) {
             throw new IllegalStateException("No movie given!");
         }
 
@@ -71,7 +76,7 @@ public class MovieDetailsFragment extends BaseFragment {
 
         int backdropWidth = DeviceUtil.getScreenWidth(getActivity());
         int backdropHeight = getResources().getDimensionPixelSize(R.dimen.details_backdrop_height);
-        picasso.load(TMDbUtil.buildBackdropUrl(movie.getBackdropPath(), backdropWidth))
+        picasso.load(TMDbUtil.buildBackdropUrl(mMovie.getBackdropPath(), backdropWidth))
                 .resize(backdropWidth, backdropHeight)
                 .centerCrop()
                 .transform(PaletteTransformation.instance())
@@ -79,19 +84,19 @@ public class MovieDetailsFragment extends BaseFragment {
 
         int posterWidth = getResources().getDimensionPixelSize(R.dimen.details_poster_width);
         int posterHeight = getResources().getDimensionPixelSize(R.dimen.details_poster_height);
-        picasso.load(TMDbUtil.buildPosterUrl(movie.getPosterPath(), posterWidth))
+        picasso.load(TMDbUtil.buildPosterUrl(mMovie.getPosterPath(), posterWidth))
                 .resize(posterWidth, posterHeight)
                 .centerCrop()
                 .into(mPoster);
 
-        mTitle.setText(movie.getTitle());
+        mTitle.setText(mMovie.getTitle());
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(movie.getReleaseDate());
+        calendar.setTime(mMovie.getReleaseDate());
         mReleaseDate.setText(String.valueOf(calendar.get(Calendar.YEAR)));
 
-        mRating.setText(String.format("%1$2.1f", movie.getRating()));
-        mSynopsis.setText(movie.getSynopsis());
+        mRating.setText(String.format("%1$2.1f", mMovie.getRating()));
+        mSynopsis.setText(mMovie.getSynopsis());
 
         // credits for onPreDraw technique: http://frogermcs.github.io/Instagram-with-Material-Design-concept-part-2-Comments-transition/
         view.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
@@ -113,13 +118,33 @@ public class MovieDetailsFragment extends BaseFragment {
 
     @Subscribe
     public void onMovieLoadedEvent(MovieLoadedEvent event) {
-        Movie fullMovie = event.movie;
-        List<Review> reviews = fullMovie.getReviews();
-        List<Video> trailers = Movie.getTrailers(fullMovie);
+        mMovie = event.movie;
+        List<Review> reviews = mMovie.getReviews();
+        List<Video> trailers = Movie.getTrailers(mMovie);
         if (BuildConfig.DEBUG) {
             Log.d(TAG, String.format("%1$s: fav=%2$s reviews=%3$d trailers=%4$d",
-                    fullMovie.getTitle(), String.valueOf(fullMovie.isFavorite()),
+                    mMovie.getTitle(), String.valueOf(mMovie.isFavorite()),
                     reviews.size(), trailers.size()));
+        }
+        addTrailers(trailers);
+    }
+
+    private void addTrailers(List<Video> trailers) {
+        mTrailersContainer.removeAllViews();
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        Picasso picasso = Picasso.with(getActivity());
+        for (Video trailer : trailers) {
+            ViewGroup thumbContainer = (ViewGroup) inflater.inflate(R.layout.video,
+                    mTrailersContainer, false);
+            ImageView thumbView = (ImageView) thumbContainer.findViewById(R.id.video_thumb);
+            thumbView.setTag(Video.getUrl(trailer));
+            thumbView.setOnClickListener(this);
+            picasso
+                    .load(Video.getThumbnailUrl(trailer))
+                    .resizeDimen(R.dimen.video_width, R.dimen.video_height)
+                    .centerCrop()
+                    .into(thumbView);
+            mTrailersContainer.addView(thumbContainer);
         }
     }
 
@@ -139,6 +164,15 @@ public class MovieDetailsFragment extends BaseFragment {
                     .translationY(0)
                     .setStartDelay(100 + 75 * i)
                     .start();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.video_thumb) {
+            String videoUrl = (String) v.getTag();
+            Intent playVideoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl));
+            startActivity(playVideoIntent);
         }
     }
 
