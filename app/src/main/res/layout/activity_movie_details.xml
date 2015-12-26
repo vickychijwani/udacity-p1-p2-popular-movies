@@ -34,6 +34,8 @@
         android:layout_height="@dimen/fab_size"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/margin_fab"
+        android:scaleX="0"
+        android:scaleY="0"
         android:src="@drawable/star_outline"/>
 
 </android.support.design.widget.CoordinatorLayout>

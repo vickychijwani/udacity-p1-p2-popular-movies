@@ -15,7 +15,9 @@ import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 
 import com.squareup.otto.Subscribe;
 
@@ -120,6 +122,23 @@ public class MovieDetailsActivity extends BaseActivity implements
 
     private void updateFavoriteBtn() {
         mFavoriteBtn.setImageDrawable(mMovie.isFavorite() ? mStarFilled : mStarOutline);
+        if (mFavoriteBtn.getScaleX() == 0) {
+            // credits for onPreDraw technique: http://frogermcs.github.io/Instagram-with-Material-Design-concept-part-2-Comments-transition/
+            mFavoriteBtn.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    mFavoriteBtn.getViewTreeObserver().removeOnPreDrawListener(this);
+                    mFavoriteBtn.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                    mFavoriteBtn.animate()
+                            .setInterpolator(new DecelerateInterpolator())
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setStartDelay(100)
+                            .start();
+                    return true;
+                }
+            });
+        }
     }
 
     @Override
