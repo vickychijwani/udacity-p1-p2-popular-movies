@@ -57,14 +57,14 @@ public class Movie extends RealmObject {
         this.releaseDate = other.getReleaseDate();
         this.isFavorite = other.isFavorite();
         this.reviews = new RealmList<>();
-        if (other.reviews != null) {
-            for (Review review : other.reviews) {
+        if (other.getReviews() != null) {
+            for (Review review : other.getReviews()) {
                 this.reviews.add(new Review(review));
             }
         }
         this.videos = new RealmList<>();
-        if (other.videos != null) {
-            for (Video video : other.videos) {
+        if (other.getVideos() != null) {
+            for (Video video : other.getVideos()) {
                 this.videos.add(new Video(video));
             }
         }
