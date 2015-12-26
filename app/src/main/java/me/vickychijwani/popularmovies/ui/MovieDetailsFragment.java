@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -46,6 +47,7 @@ public class MovieDetailsFragment extends BaseFragment {
     @Bind(R.id.rating_container)    ViewGroup mRatingContainer;
     @Bind(R.id.synopsis)            TextView mSynopsis;
     @Bind(R.id.trailers_header)     TextView mTrailersHeader;
+    @Bind(R.id.trailers_container)  HorizontalScrollView mTrailersScrollView;
     @Bind(R.id.trailers)            ViewGroup mTrailersView;
     @Bind(R.id.reviews_header)      TextView mReviewsHeader;
     @Bind(R.id.reviews)             ViewGroup mReviewsView;
@@ -127,8 +129,17 @@ public class MovieDetailsFragment extends BaseFragment {
                     mMovie.getTitle(), String.valueOf(mMovie.isFavorite()),
                     reviews.size(), trailers.size()));
         }
-        addTrailers(trailers);
-        addReviews(reviews);
+        boolean hasTrailers = !trailers.isEmpty(), hasReviews = !reviews.isEmpty();
+        mTrailersHeader.setVisibility(hasTrailers ? View.VISIBLE : View.GONE);
+        mTrailersScrollView.setVisibility(hasTrailers ? View.VISIBLE : View.GONE);
+        if (hasTrailers) {
+            addTrailers(trailers);
+        }
+        mReviewsHeader.setVisibility(hasReviews ? View.VISIBLE : View.GONE);
+        mReviewsView.setVisibility(hasReviews ? View.VISIBLE : View.GONE);
+        if (hasReviews) {
+            addReviews(reviews);
+        }
     }
 
     private void addTrailers(List<Video> trailers) {

@@ -130,6 +130,7 @@
             android:paddingTop="@dimen/margin_large"
             android:text="@string/trailers"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:visibility="gone"
             />
 
         <HorizontalScrollView
@@ -138,6 +139,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/trailers_header"
             android:layout_marginTop="@dimen/margin_large"
+            android:visibility="gone"
             tools:ignore="RtlHardcoded,RtlSymmetry">
 
             <LinearLayout
@@ -164,6 +166,7 @@
             android:paddingTop="@dimen/margin_large"
             android:text="@string/reviews"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:visibility="gone"
             />
 
         <LinearLayout
@@ -173,6 +176,7 @@
             android:layout_below="@id/reviews_header"
             android:layout_marginTop="@dimen/margin_default"
             android:orientation="vertical"
+            android:visibility="gone"
             />
 
     </RelativeLayout>
