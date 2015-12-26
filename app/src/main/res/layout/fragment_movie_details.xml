@@ -118,6 +118,7 @@
             />
 
         <HorizontalScrollView
+            android:id="@+id/trailers_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/synopsis"
@@ -125,15 +126,24 @@
             tools:ignore="RtlHardcoded,RtlSymmetry">
 
             <LinearLayout
-                android:id="@+id/trailers_container"
+                android:id="@+id/trailers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:divider="@drawable/trailers_divider"
+                android:divider="@drawable/divider_margin_default"
                 android:orientation="horizontal"
                 android:showDividers="middle"
                 />
 
         </HorizontalScrollView>
+
+        <LinearLayout
+            android:id="@+id/reviews"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/trailers_container"
+            android:layout_marginTop="@dimen/margin_default"
+            android:orientation="vertical"
+            />
 
     </RelativeLayout>
 

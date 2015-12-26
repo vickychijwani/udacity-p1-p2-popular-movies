@@ -3,14 +3,17 @@ package me.vickychijwani.popularmovies.ui;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
+import android.app.ActivityOptions;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.ColorInt;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 
@@ -20,9 +23,9 @@ import butterknife.Bind;
 import butterknife.BindDrawable;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
+import me.vickychijwani.popularmovies.entity.Review;
 import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.event.events.UpdateMovieEvent;
@@ -41,6 +44,9 @@ public class MovieDetailsActivity extends BaseActivity implements
     @BindDrawable(R.drawable.star)          Drawable mStarFilled;
 
     private Movie mMovie;
+    @ColorInt private int mPrimaryColor = -1;
+    @ColorInt private int mPrimaryDarkColor = -1;
+    @ColorInt private int mTitleTextColor = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +91,24 @@ public class MovieDetailsActivity extends BaseActivity implements
                 movieCopy.setFavorite(!movieCopy.isFavorite());
                 getDataBus().post(new UpdateMovieEvent(movieCopy));
             }
+        } else if (v.getId() == R.id.video_thumb) {
+            String videoUrl = (String) v.getTag();
+            Intent playVideoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl));
+            startActivity(playVideoIntent);
+        } else if (v.getId() == R.id.review) {
+            Review review = (Review) v.getTag();
+            Intent reviewIntent = new Intent(this, ReviewActivity.class);
+            reviewIntent.putExtra(BundleKeys.REVIEW, Review.toParcelable(review));
+            boolean validColors = (mPrimaryColor != -1 && mPrimaryDarkColor != -1
+                    && mTitleTextColor != -1);
+            if (validColors) {
+                reviewIntent.putExtra(BundleKeys.COLOR_PRIMARY, mPrimaryColor);
+                reviewIntent.putExtra(BundleKeys.COLOR_PRIMARY_DARK, mPrimaryDarkColor);
+                reviewIntent.putExtra(BundleKeys.COLOR_TEXT_TITLE, mTitleTextColor);
+            }
+            ActivityOptions opts = ActivityOptions.makeScaleUpAnimation(v, 0, 0, v.getWidth(),
+                    v.getHeight());
+            startActivity(reviewIntent, opts.toBundle());
         }
     }
 
@@ -106,12 +130,12 @@ public class MovieDetailsActivity extends BaseActivity implements
             return;
         }
 
-        int newPrimaryColor = vibrant.getRgb();
-        final int newTitleTextColor = vibrant.getTitleTextColor();
-        int newPrimaryDarkColor = AppUtil.multiplyColor(newPrimaryColor, 0.8f);
+        mPrimaryColor = vibrant.getRgb();
+        mTitleTextColor = vibrant.getTitleTextColor();
+        mPrimaryDarkColor = AppUtil.multiplyColor(mPrimaryColor, 0.8f);
 
         int currentPrimaryColor = getResources().getColor(R.color.colorPrimary);
-        startColorAnimation(currentPrimaryColor, newPrimaryColor, new ColorUpdateListener() {
+        startColorAnimation(currentPrimaryColor, mPrimaryColor, new ColorUpdateListener() {
             @Override
             public void onColorUpdate(int color) {
                 mToolbar.setBackgroundColor(color);
@@ -119,17 +143,17 @@ public class MovieDetailsActivity extends BaseActivity implements
         });
 
         int currentTitleTextColor = getResources().getColor(android.R.color.white);
-        startColorAnimation(currentTitleTextColor, newTitleTextColor, new ColorUpdateListener() {
+        startColorAnimation(currentTitleTextColor, mTitleTextColor, new ColorUpdateListener() {
             @Override
             public void onColorUpdate(int color) {
-                mToolbar.setTitleTextColor(newTitleTextColor);
-                AppUtil.tintDrawable(mUpArrow, newTitleTextColor);
+                mToolbar.setTitleTextColor(mTitleTextColor);
+                AppUtil.tintDrawable(mUpArrow, mTitleTextColor);
             }
         });
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             int statusBarColor = getWindow().getStatusBarColor();
-            startColorAnimation(statusBarColor, newPrimaryDarkColor, new ColorUpdateListener() {
+            startColorAnimation(statusBarColor, mPrimaryDarkColor, new ColorUpdateListener() {
                 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
                 @Override
                 public void onColorUpdate(int color) {

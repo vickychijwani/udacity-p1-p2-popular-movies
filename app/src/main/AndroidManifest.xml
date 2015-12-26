@@ -11,6 +11,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".ui.MoviesActivity"
             android:label="@string/app_name"
@@ -21,6 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ui.MovieDetailsActivity"
             android:label="@string/title_activity_movie_details"
@@ -30,6 +32,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="me.vickychijwani.popularmovies.ui.MoviesActivity"/>
         </activity>
+
+        <activity
+            android:name=".ui.ReviewActivity"
+            android:label="@string/title_activity_review"
+            android:parentActivityName=".ui.MovieDetailsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="me.vickychijwani.popularmovies.ui.MovieDetailsActivity"/>
+        </activity>
+
     </application>
 
 </manifest>

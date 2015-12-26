@@ -4,6 +4,7 @@ import android.support.v4.app.Fragment;
 
 import com.squareup.otto.Bus;
 
+import butterknife.ButterKnife;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
 
 public abstract class BaseFragment extends Fragment {
@@ -22,6 +23,12 @@ public abstract class BaseFragment extends Fragment {
     public void onStop() {
         super.onStop();
         getDataBus().unregister(this);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
     }
 
 }

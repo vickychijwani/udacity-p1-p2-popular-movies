@@ -18,31 +18,39 @@ public class DataBusProvider {
     private static final class DataBus extends Bus {
         private static final String TAG = "DataBus";
 
+        public DataBus() {
+            super();
+            log(Log.INFO, "INIT", "");
+        }
+
         @Override
         public void register(Object object) {
             super.register(object);
-            if (BuildConfig.DEBUG) {
-                Log.i(TAG, "[REG  ] " + object.getClass().getSimpleName());
-            }
+            log(Log.INFO, "REG", object.getClass().getSimpleName());
         }
 
         @Override
         public void unregister(Object object) {
-            if (BuildConfig.DEBUG) {
-                Log.i(TAG, "[UNREG] " + object.getClass().getSimpleName());
-            }
+            log(Log.INFO, "UNREG", object.getClass().getSimpleName());
             super.unregister(object);
         }
 
         @Override
         public void post(Object event) {
             if (event instanceof DeadEvent) {
-                Log.w(TAG, "[DEAD ] Dead event posted: " +
-                        ((DeadEvent) event).event.getClass().getSimpleName());
-            } else if (BuildConfig.DEBUG) {
-                Log.d(TAG, "[POST ] " + event.toString());
+                String deadEventName = ((DeadEvent) event).event.getClass().getSimpleName();
+                log(Log.WARN, "DEAD", "Dead event posted: " + deadEventName);
+            } else {
+                log(Log.DEBUG, "POST", event.toString());
             }
             super.post(event);
+        }
+
+        private void log(int priority, String type, String message) {
+            if (BuildConfig.DEBUG || priority >= Log.WARN) {
+                String logMsg = String.format("[%1$5s] %2$s on %3$s", type, message, toString());
+                Log.println(priority, TAG, logMsg);
+            }
         }
     }
 

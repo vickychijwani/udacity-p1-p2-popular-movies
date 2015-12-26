@@ -1,5 +1,6 @@
 package me.vickychijwani.popularmovies.entity;
 
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import org.parceler.Parcel;
@@ -29,6 +30,17 @@ public class Review extends RealmObject {
         this.content = other.getContent();
         this.url = other.getUrl();
     }
+
+    public static Parcelable toParcelable(Review review) {
+        return Parcels.wrap(Review.class, review);
+    }
+
+    public static Review fromParcelable(Parcelable parcelable) {
+        return Parcels.unwrap(parcelable);
+    }
+
+
+
 
     public String getId() {
         return id;

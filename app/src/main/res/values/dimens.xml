@@ -15,7 +15,6 @@
     <dimen name="details_poster_margin_top">172dp</dimen>
     <dimen name="video_height">180dp</dimen>
     <dimen name="video_width">240dp</dimen> <!-- height * aspect_ratio -->
-    <dimen name="video_spacing">8dp</dimen>
 
     <!-- misc dimensions -->
     <item name="body_text_line_spacing" format="float" type="dimen">1.15</item>

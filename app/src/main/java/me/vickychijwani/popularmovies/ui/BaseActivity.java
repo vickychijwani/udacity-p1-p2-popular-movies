@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 
 import com.squareup.otto.Bus;
 
@@ -56,15 +57,27 @@ public abstract class BaseActivity extends AppCompatActivity {
         logLifecycleMethod();
     }
 
-    public void logLifecycleMethod() {
+    private void logLifecycleMethod() {
         if (BuildConfig.DEBUG) {
             Log.i(LIFECYCLE, getMethodName(this));
         }
     }
 
-    public static String getMethodName(BaseActivity instance) {
+    private static String getMethodName(BaseActivity instance) {
         return instance.getClass().getSimpleName() + "#" +
                 Thread.currentThread().getStackTrace()[4].getMethodName();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // back and up are different actions, but by default let's have up == back
+                // in a simple application like ours, there really is no difference between the two
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 }

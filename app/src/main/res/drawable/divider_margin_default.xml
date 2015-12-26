@@ -2,8 +2,8 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
 
     <size
-        android:height="@dimen/video_spacing"
-        android:width="@dimen/video_spacing"
+        android:height="@dimen/margin_default"
+        android:width="@dimen/margin_default"
         />
 
 </shape>

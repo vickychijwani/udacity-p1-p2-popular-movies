@@ -1,8 +1,6 @@
 package me.vickychijwani.popularmovies.ui;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.graphics.Palette;
@@ -34,7 +32,7 @@ import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.util.DeviceUtil;
 import me.vickychijwani.popularmovies.util.TMDbUtil;
 
-public class MovieDetailsFragment extends BaseFragment implements View.OnClickListener {
+public class MovieDetailsFragment extends BaseFragment {
 
     private static final String TAG = "MovieDetailsFragment";
 
@@ -47,7 +45,8 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
     @Bind(R.id.rating)              TextView mRating;
     @Bind(R.id.rating_container)    ViewGroup mRatingContainer;
     @Bind(R.id.synopsis)            TextView mSynopsis;
-    @Bind(R.id.trailers_container)  ViewGroup mTrailersContainer;
+    @Bind(R.id.trailers)            ViewGroup mTrailersView;
+    @Bind(R.id.reviews)             ViewGroup mReviewsView;
 
     private Movie mMovie;
 
@@ -127,24 +126,41 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
                     reviews.size(), trailers.size()));
         }
         addTrailers(trailers);
+        addReviews(reviews);
     }
 
     private void addTrailers(List<Video> trailers) {
-        mTrailersContainer.removeAllViews();
+        mTrailersView.removeAllViews();
         LayoutInflater inflater = getActivity().getLayoutInflater();
         Picasso picasso = Picasso.with(getActivity());
         for (Video trailer : trailers) {
-            ViewGroup thumbContainer = (ViewGroup) inflater.inflate(R.layout.video,
-                    mTrailersContainer, false);
+            ViewGroup thumbContainer = (ViewGroup) inflater.inflate(R.layout.video, mTrailersView,
+                    false);
             ImageView thumbView = (ImageView) thumbContainer.findViewById(R.id.video_thumb);
             thumbView.setTag(Video.getUrl(trailer));
-            thumbView.setOnClickListener(this);
+            thumbView.setOnClickListener((View.OnClickListener) getActivity());
             picasso
                     .load(Video.getThumbnailUrl(trailer))
                     .resizeDimen(R.dimen.video_width, R.dimen.video_height)
                     .centerCrop()
                     .into(thumbView);
-            mTrailersContainer.addView(thumbContainer);
+            mTrailersView.addView(thumbContainer);
+        }
+    }
+
+    private void addReviews(List<Review> reviews) {
+        mReviewsView.removeAllViews();
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        for (Review review : reviews) {
+            ViewGroup reviewContainer = (ViewGroup) inflater.inflate(R.layout.review, mReviewsView,
+                    false);
+            TextView reviewAuthor = (TextView) reviewContainer.findViewById(R.id.review_author);
+            TextView reviewContent = (TextView) reviewContainer.findViewById(R.id.review_content);
+            reviewAuthor.setText(review.getAuthor());
+            reviewContent.setText(review.getContent().replace("\n\n", " ").replace("\n", " "));
+            reviewContainer.setOnClickListener((View.OnClickListener) getActivity());
+            reviewContainer.setTag(review);
+            mReviewsView.addView(reviewContainer);
         }
     }
 
@@ -164,15 +180,6 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
                     .translationY(0)
                     .setStartDelay(100 + 75 * i)
                     .start();
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.video_thumb) {
-            String videoUrl = (String) v.getTag();
-            Intent playVideoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl));
-            startActivity(playVideoIntent);
         }
     }
 
