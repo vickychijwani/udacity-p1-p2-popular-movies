@@ -12,6 +12,7 @@
     <string name="rating_denominator">/10</string>
     <string name="trailers">Trailers</string>
     <string name="reviews">Reviews</string>
+    <string name="share_trailer">Share Trailer</string>
 
     <string name="title_activity_review">Review</string>
 

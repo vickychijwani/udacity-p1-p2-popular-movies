@@ -3,8 +3,11 @@ package me.vickychijwani.popularmovies.util;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -23,6 +26,18 @@ public class AppUtil {
     public static void tintDrawable(@Nullable Drawable drawable, int color) {
         if (drawable != null) {
             drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+    }
+
+    public static void tintMenuItems(@Nullable Menu menu, @ColorInt int color) {
+        if (menu == null) {
+            return;
+        }
+        for (int i = 0; i < menu.size(); ++i) {
+            MenuItem menuItem = menu.getItem(i);
+            if (menuItem != null && menuItem.getIcon() != null) {
+                tintDrawable(menuItem.getIcon(), color);
+            }
         }
     }
 

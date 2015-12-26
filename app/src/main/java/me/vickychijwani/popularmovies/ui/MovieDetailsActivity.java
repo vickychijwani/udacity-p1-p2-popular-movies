@@ -14,6 +14,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
@@ -28,6 +30,7 @@ import butterknife.OnClick;
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.entity.Review;
+import me.vickychijwani.popularmovies.entity.Video;
 import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.event.events.UpdateMovieEvent;
@@ -44,6 +47,8 @@ public class MovieDetailsActivity extends BaseActivity implements
     @BindDrawable(R.drawable.arrow_left)    Drawable mUpArrow;
     @BindDrawable(R.drawable.star_outline)  Drawable mStarOutline;
     @BindDrawable(R.drawable.star)          Drawable mStarFilled;
+
+    private Menu mMenu = null;
 
     private Movie mMovie;
     @ColorInt private int mPrimaryColor = -1;
@@ -84,6 +89,46 @@ public class MovieDetailsActivity extends BaseActivity implements
         getDataBus().post(new LoadMovieEvent(mMovie.getId()));
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_movie_details, menu);
+        mMenu = menu;
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        boolean hasTrailers = !Movie.getTrailers(mMovie).isEmpty();
+        menu.findItem(R.id.share_trailer).setVisible(hasTrailers);
+        if (mTitleTextColor != -1) {
+            AppUtil.tintMenuItems(menu, mTitleTextColor);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.share_trailer:
+                Video firstTrailer = Movie.getTrailers(mMovie).get(0);
+                String subject = mMovie.getTitle() + " - " + firstTrailer.getName();
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                    //noinspection deprecation
+                    shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+                } else {
+                    shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                }
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, Video.getUrl(firstTrailer));
+                shareIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.share_trailer)));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     @OnClick(R.id.favorite)
     @Override
     public void onClick(View v) {
@@ -118,6 +163,7 @@ public class MovieDetailsActivity extends BaseActivity implements
     public void onMovieLoadedEvent(MovieLoadedEvent event) {
         mMovie = event.movie;
         updateFavoriteBtn();
+        supportInvalidateOptionsMenu();
     }
 
     private void updateFavoriteBtn() {
@@ -167,6 +213,7 @@ public class MovieDetailsActivity extends BaseActivity implements
             public void onColorUpdate(int color) {
                 mToolbar.setTitleTextColor(mTitleTextColor);
                 AppUtil.tintDrawable(mUpArrow, mTitleTextColor);
+                AppUtil.tintMenuItems(mMenu, mTitleTextColor);
             }
         });
 
