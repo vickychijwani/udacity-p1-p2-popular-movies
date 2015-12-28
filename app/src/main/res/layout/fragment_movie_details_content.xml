@@ -139,6 +139,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/trailers_header"
             android:layout_marginTop="@dimen/margin_large"
+            android:clipChildren="false"
             android:visibility="gone"
             tools:ignore="RtlHardcoded,RtlSymmetry">
 
@@ -146,6 +147,7 @@
                 android:id="@+id/trailers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
                 android:divider="@drawable/divider_margin_default"
                 android:orientation="horizontal"
                 android:showDividers="middle"
@@ -175,6 +177,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/reviews_header"
             android:layout_marginTop="@dimen/margin_default"
+            android:clipChildren="false"
             android:orientation="vertical"
             android:visibility="gone"
             />

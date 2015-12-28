@@ -6,14 +6,17 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 
 import java.lang.reflect.InvocationTargetException;
@@ -23,6 +26,11 @@ import me.vickychijwani.popularmovies.R;
 public class AppUtil {
 
     private static final String TAG = "AppUtil";
+
+    public enum ToolbarNavIcon {
+        UP,
+        NONE
+    }
 
     public static int multiplyColor(int srcColor, float factor) {
         int alpha = Color.alpha(srcColor);
@@ -50,11 +58,41 @@ public class AppUtil {
         }
     }
 
+    public static void setupToolbar(final Activity activity, Toolbar toolbar, ToolbarNavIcon icon,
+                                    String title) {
+        if (icon == ToolbarNavIcon.UP) {
+            Drawable upArrow = ContextCompat.getDrawable(activity, R.drawable.arrow_left);
+            AppUtil.tintDrawable(upArrow, ContextCompat.getColor(activity, android.R.color.white));
+            toolbar.setNavigationIcon(upArrow);
+            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    activity.onBackPressed();
+                }
+            });
+        }
+        toolbar.setTitle(title);
+    }
+
     public static void setColorTheme(final Activity activity, final Toolbar mToolbar,
                                      int primaryColor, int primaryDarkColor,
                                      final int titleTextColor, boolean animate) {
+        int currentTitleTextColor = ContextCompat.getColor(activity, android.R.color.white);
+        setColorTheme(activity, mToolbar, primaryColor, primaryDarkColor, titleTextColor,
+                currentTitleTextColor, animate);
+    }
+
+    public static void setColorTheme(final Activity activity, final Toolbar mToolbar,
+                                     int primaryColor, int primaryDarkColor,
+                                     final int titleTextColor, int currentTitleTextColor,
+                                     boolean animate) {
         if (animate) {
-            int currentPrimaryColor = activity.getResources().getColor(R.color.colorPrimary);
+            int currentPrimaryColor;
+            if (mToolbar.getBackground() instanceof ColorDrawable) {
+                currentPrimaryColor = ((ColorDrawable) mToolbar.getBackground()).getColor();
+            } else {
+                currentPrimaryColor = ContextCompat.getColor(activity, R.color.colorPrimary);
+            }
             startColorAnimation(currentPrimaryColor, primaryColor, new ColorUpdateListener() {
                 @Override
                 public void onColorUpdate(int color) {
@@ -73,7 +111,6 @@ public class AppUtil {
                 });
             }
 
-            int currentTitleTextColor = activity.getResources().getColor(android.R.color.white);
             startColorAnimation(currentTitleTextColor, titleTextColor, new ColorUpdateListener() {
                 @Override
                 public void onColorUpdate(int color) {

@@ -8,7 +8,6 @@ import com.squareup.otto.Subscribe;
 import butterknife.ButterKnife;
 import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
-import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 
 public class MovieDetailsActivity extends BaseActivity {
@@ -26,20 +25,13 @@ public class MovieDetailsActivity extends BaseActivity {
         mMovie = Movie.fromParcelable(getIntent().getExtras().getParcelable(BundleKeys.MOVIE));
 
         if (savedInstanceState == null) {
-            Fragment detailsFragment = MovieDetailsFragment.newInstance(mMovie);
-            detailsFragment.setHasOptionsMenu(true);
+            Fragment detailsFragment = MovieDetailsFragment.newInstance(mMovie, false);
             getSupportFragmentManager()
                     .beginTransaction()
                     .add(R.id.fragment_container, detailsFragment,
                             MovieDetailsFragment.class.getSimpleName())
                     .commit();
         }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        getDataBus().post(new LoadMovieEvent(mMovie.getId()));
     }
 
     @Subscribe

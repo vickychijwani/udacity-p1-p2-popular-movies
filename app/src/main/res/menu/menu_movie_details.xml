@@ -6,6 +6,7 @@
         android:id="@+id/share_trailer"
         android:title="@string/share_trailer"
         android:icon="@drawable/share"
+        android:visible="false"
         app:showAsAction="ifRoom"
         />
 

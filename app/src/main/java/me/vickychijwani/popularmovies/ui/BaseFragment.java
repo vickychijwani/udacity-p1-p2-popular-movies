@@ -1,8 +1,6 @@
 package me.vickychijwani.popularmovies.ui;
 
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
 
 import com.squareup.otto.Bus;
 
@@ -31,18 +29,6 @@ public abstract class BaseFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         ButterKnife.unbind(this);
-    }
-
-    protected ActionBar getSupportActionBar() {
-        return ((BaseActivity) getActivity()).getSupportActionBar();
-    }
-
-    protected void setSupportActionBar(Toolbar toolbar) {
-        ((BaseActivity) getActivity()).setSupportActionBar(toolbar);
-    }
-
-    public void supportInvalidateOptionsMenu() {
-        getActivity().supportInvalidateOptionsMenu();
     }
 
 }

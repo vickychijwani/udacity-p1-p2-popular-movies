@@ -29,10 +29,10 @@ final class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHo
     private final Picasso mPicasso;
     private final int mPosterWidth;
     private final int mPosterHeight;
-    private final MovieViewHolder.ClickListener mItemClickListener;
+    private final ClickListener mItemClickListener;
 
     public MoviesAdapter(Context context, List<Movie> movies, int posterWidth,
-                         MovieViewHolder.ClickListener itemClickListener) {
+                         ClickListener itemClickListener) {
         mMovies = movies;
         mInflater = LayoutInflater.from(context);
         mPicasso = Picasso.with(context);
@@ -53,7 +53,8 @@ final class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHo
 
     @Override
     public void onBindViewHolder(MovieViewHolder holder, int position) {
-        Movie movie = mMovies.get(position);
+        Movie movie = getItem(position);
+        holder.setMovie(movie);
         mPicasso
                 .load(TMDbUtil.buildPosterUrl(movie.getPosterPath(), mPosterWidth))
                 .resize(mPosterWidth, mPosterHeight)
@@ -78,9 +79,9 @@ final class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHo
     static final class MovieViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
 
-        @Bind(R.id.movie_poster)
-        ImageView mPoster;
+        @Bind(R.id.movie_poster)    ImageView mPoster;
 
+        private Movie mMovie = null;
         private final ClickListener mClickListener;
 
         public MovieViewHolder(View itemView, ClickListener clickListener) {
@@ -90,15 +91,19 @@ final class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHo
             mClickListener = clickListener;
         }
 
+        public void setMovie(Movie movie) {
+            mMovie = movie;
+        }
+
         @Override
         public void onClick(View v) {
-            mClickListener.onPosterClick(itemView);
+            mClickListener.onMovieClick(itemView, mMovie);
         }
 
-        public interface ClickListener {
-            void onPosterClick(View itemView);
-        }
+    }
 
+    public interface ClickListener {
+        void onMovieClick(View movieView, Movie movie);
     }
 
 }

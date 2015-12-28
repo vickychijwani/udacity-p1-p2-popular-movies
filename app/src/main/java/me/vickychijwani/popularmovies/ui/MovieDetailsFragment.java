@@ -1,5 +1,6 @@
 package me.vickychijwani.popularmovies.ui;
 
+import android.animation.Animator;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Intent;
@@ -15,12 +16,12 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.HorizontalScrollView;
@@ -31,6 +32,8 @@ import android.widget.TextView;
 import com.squareup.otto.Subscribe;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -43,13 +46,15 @@ import me.vickychijwani.popularmovies.R;
 import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.entity.Review;
 import me.vickychijwani.popularmovies.entity.Video;
+import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
 import me.vickychijwani.popularmovies.event.events.UpdateMovieEvent;
 import me.vickychijwani.popularmovies.util.AppUtil;
-import me.vickychijwani.popularmovies.util.DeviceUtil;
 import me.vickychijwani.popularmovies.util.TMDbUtil;
 
-public class MovieDetailsFragment extends BaseFragment implements View.OnClickListener {
+public class MovieDetailsFragment extends BaseFragment implements
+        View.OnClickListener,
+        Toolbar.OnMenuItemClickListener {
 
     private static final String TAG = "MovieDetailsFragment";
 
@@ -71,7 +76,6 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
     @Bind(R.id.reviews)             ViewGroup mReviewsView;
     @Bind(R.id.favorite)            FloatingActionButton mFavoriteBtn;
 
-    @BindDrawable(R.drawable.arrow_left)    Drawable mUpArrow;
     @BindDrawable(R.drawable.star_outline)  Drawable mStarOutline;
     @BindDrawable(R.drawable.star)          Drawable mStarFilled;
 
@@ -80,13 +84,16 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
     @ColorInt private int mTitleTextColor = -1;
 
     private Movie mMovie;
+    private List<View> mEnterAnimationViews;
+    private List<View> mExitAnimationViews;
 
     public MovieDetailsFragment() {}
 
-    public static MovieDetailsFragment newInstance(Movie movie) {
+    public static MovieDetailsFragment newInstance(Movie movie, boolean twoPane) {
         MovieDetailsFragment fragment = new MovieDetailsFragment();
         Bundle args = new Bundle();
         args.putParcelable(BundleKeys.MOVIE, Movie.toParcelable(movie));
+        args.putBoolean(BundleKeys.TWO_PANE, twoPane);
         fragment.setArguments(args);
         return fragment;
     }
@@ -102,37 +109,20 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
             throw new IllegalStateException("No movie given!");
         }
 
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        AppUtil.tintDrawable(mUpArrow, ContextCompat.getColor(getActivity(), android.R.color.white));
-        getSupportActionBar().setHomeAsUpIndicator(mUpArrow);
-        getSupportActionBar().setTitle(mMovie.getTitle());
+        AppUtil.ToolbarNavIcon navIcon = getArguments().getBoolean(BundleKeys.TWO_PANE)
+                ? AppUtil.ToolbarNavIcon.NONE
+                : AppUtil.ToolbarNavIcon.UP;
+        AppUtil.setupToolbar(getActivity(), mToolbar, navIcon, mMovie.getTitle());
+        mToolbar.inflateMenu(R.menu.menu_movie_details);
+        mToolbar.setOnMenuItemClickListener(this);
 
-        Picasso picasso = Picasso.with(getActivity());
-
-        int backdropWidth = DeviceUtil.getScreenWidth(getActivity());
-        int backdropHeight = getResources().getDimensionPixelSize(R.dimen.details_backdrop_height);
-        picasso.load(TMDbUtil.buildBackdropUrl(mMovie.getBackdropPath(), backdropWidth))
-                .resize(backdropWidth, backdropHeight)
-                .centerCrop()
-                .transform(PaletteTransformation.instance())
-                .into(mBackdrop, new ActivityPaletteTransformation(mBackdrop));
-
-        int posterWidth = getResources().getDimensionPixelSize(R.dimen.details_poster_width);
-        int posterHeight = getResources().getDimensionPixelSize(R.dimen.details_poster_height);
-        picasso.load(TMDbUtil.buildPosterUrl(mMovie.getPosterPath(), posterWidth))
-                .resize(posterWidth, posterHeight)
-                .centerCrop()
-                .into(mPoster);
-
-        mTitle.setText(mMovie.getTitle());
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(mMovie.getReleaseDate());
-        mReleaseDate.setText(String.valueOf(calendar.get(Calendar.YEAR)));
-
-        mRating.setText(String.format("%1$2.1f", mMovie.getRating()));
-        mSynopsis.setText(mMovie.getSynopsis());
+        mEnterAnimationViews = Arrays.asList(
+                mTitle, mReleaseDate, mRatingContainer, mSynopsis,
+                mTrailersHeader, mTrailersView, mReviewsHeader, mReviewsView);
+        mExitAnimationViews = new ArrayList<>();
+        mExitAnimationViews.add(mBackdrop);
+        mExitAnimationViews.add(mPoster);
+        mExitAnimationViews.addAll(mEnterAnimationViews);
 
         // credits for onPreDraw technique: http://frogermcs.github.io/Instagram-with-Material-Design-concept-part-2-Comments-transition/
         view.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
@@ -144,7 +134,8 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
                     lp.height = mScrollView.getHeight();
                     mScrollViewLayout.setLayoutParams(lp);
                 }
-                animateContent();
+                updateMovieDetails();
+                startEnterAnimation(100);
                 return true;
             }
         });
@@ -153,18 +144,13 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_movie_details, menu);
+    public void onStart() {
+        super.onStart();
+        getDataBus().post(new LoadMovieEvent(mMovie.getId()));
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        boolean hasTrailers = !Movie.getTrailers(mMovie).isEmpty();
-        menu.findItem(R.id.share_trailer).setVisible(hasTrailers);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.share_trailer:
                 Video firstTrailer = Movie.getTrailers(mMovie).get(0);
@@ -216,10 +202,46 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
         }
     }
 
+    private void updateMovieDetails() {
+        Picasso picasso = Picasso.with(getActivity());
+
+        mToolbar.setTitle(mMovie.getTitle());
+
+        mBackdrop.setAlpha(0f); // wait for enter animation
+        mBackdrop.setTranslationY(0);
+        int backdropWidth = mBackdrop.getWidth();   // this will be correct because this function is
+                                                    // only called after layout is complete
+        int backdropHeight = getResources().getDimensionPixelSize(R.dimen.details_backdrop_height);
+        picasso.load(TMDbUtil.buildBackdropUrl(mMovie.getBackdropPath(), backdropWidth))
+                .resize(backdropWidth, backdropHeight)
+                .centerCrop()
+                .transform(PaletteTransformation.instance())
+                .noFade()
+                .into(mBackdrop, new PaletteTransformationCallback(mBackdrop));
+
+        mPoster.setAlpha(0f); // wait for enter animation
+        mPoster.setTranslationY(0);
+        int posterWidth = getResources().getDimensionPixelSize(R.dimen.details_poster_width);
+        int posterHeight = getResources().getDimensionPixelSize(R.dimen.details_poster_height);
+        picasso.load(TMDbUtil.buildPosterUrl(mMovie.getPosterPath(), posterWidth))
+                .resize(posterWidth, posterHeight)
+                .centerCrop()
+                .noFade()
+                .into(mPoster);
+
+        mTitle.setText(mMovie.getTitle());
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(mMovie.getReleaseDate());
+        mReleaseDate.setText(String.valueOf(calendar.get(Calendar.YEAR)));
+
+        mRating.setText(String.format("%1$2.1f", mMovie.getRating()));
+        mSynopsis.setText(mMovie.getSynopsis());
+    }
+
     @Subscribe
     public void onMovieLoadedEvent(MovieLoadedEvent event) {
         mMovie = event.movie;
-        supportInvalidateOptionsMenu();
 
         updateFavoriteBtn();
         List<Review> reviews = mMovie.getReviews();
@@ -231,6 +253,7 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
         }
 
         boolean hasTrailers = !trailers.isEmpty();
+        mToolbar.getMenu().findItem(R.id.share_trailer).setVisible(hasTrailers);
         mTrailersHeader.setVisibility(hasTrailers ? View.VISIBLE : View.GONE);
         mTrailersScrollView.setVisibility(hasTrailers ? View.VISIBLE : View.GONE);
         if (hasTrailers) {
@@ -245,6 +268,21 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
         }
     }
 
+    public void setMovie(final Movie movie) {
+        if (movie.getId() == mMovie.getId()) {
+            return;
+        }
+        startExitAnimation(new Runnable() {
+            @Override
+            public void run() {
+                mMovie = movie;
+                getDataBus().post(new LoadMovieEvent(mMovie.getId()));
+                updateMovieDetails();
+                startEnterAnimation(0);
+            }
+        });
+    }
+
     private void updateFavoriteBtn() {
         mFavoriteBtn.setImageDrawable(mMovie.isFavorite() ? mStarFilled : mStarOutline);
         if (mFavoriteBtn.getScaleX() == 0) {
@@ -253,8 +291,8 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
                 @Override
                 public boolean onPreDraw() {
                     mFavoriteBtn.getViewTreeObserver().removeOnPreDrawListener(this);
-                    mFavoriteBtn.setLayerType(View.LAYER_TYPE_HARDWARE, null);
                     mFavoriteBtn.animate()
+                            .withLayer()
                             .setInterpolator(new DecelerateInterpolator())
                             .scaleX(1f)
                             .scaleY(1f)
@@ -301,45 +339,83 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
         }
     }
 
-    private void animateContent() {
-        View[] animatedViews = new View[] {
-                mTitle, mReleaseDate, mRatingContainer, mSynopsis,
-                mTrailersHeader, mTrailersView, mReviewsHeader, mReviewsView
-        };
+    private void startEnterAnimation(int startDelay) {
         Interpolator interpolator = new DecelerateInterpolator();
-        for (int i = 0; i < animatedViews.length; ++i) {
-            View v = animatedViews[i];
-            v.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        mBackdrop.setAlpha(0f);
+        mBackdrop.animate().setInterpolator(interpolator).alpha(1f).start();
+        mPoster.setAlpha(0f);
+        mPoster.animate().setInterpolator(interpolator).alpha(1f).start();
+        for (int i = 0; i < mEnterAnimationViews.size(); ++i) {
+            final View v = mEnterAnimationViews.get(i);
             v.setAlpha(0f);
             v.setTranslationY(75);
             v.animate()
+                    .withLayer()
                     .setInterpolator(interpolator)
                     .alpha(1.0f)
                     .translationY(0)
-                    .setStartDelay(100 + 75 * i)
+                    .setStartDelay(startDelay + 75 * i)
+                    .setListener(null)      // http://stackoverflow.com/a/22934588/504611
                     .start();
         }
     }
 
-    class ActivityPaletteTransformation extends PaletteTransformation.Callback {
-        public ActivityPaletteTransformation(@NonNull ImageView imageView) {
+    private void startExitAnimation(final Runnable onAnimationNearlyEnded) {
+        Interpolator interpolator = new AccelerateInterpolator();
+        final View viewForAnimationNearlyEnded = mExitAnimationViews.get(5);
+        for (int i = 0; i < mExitAnimationViews.size(); ++i) {
+            final View v = mExitAnimationViews.get(i);
+            v.setAlpha(1f);
+            v.setTranslationY(0);
+            ViewPropertyAnimator animator = v.animate();
+            if (v == viewForAnimationNearlyEnded) {
+                animator.setListener(new AnimatorEndListener() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        onAnimationNearlyEnded.run();
+                    }
+                });
+            }
+            animator
+                    .withLayer()
+                    .setInterpolator(interpolator)
+                    .alpha(0.0f)
+                    .translationY(-75)
+                    .setStartDelay(75 * i)
+                    .start();
+        }
+        mFavoriteBtn.animate()
+                .withLayer()
+                .setInterpolator(interpolator)
+                .scaleX(0f)
+                .scaleY(0f)
+                .start();
+    }
+
+    class PaletteTransformationCallback extends PaletteTransformation.Callback {
+        public PaletteTransformationCallback(@NonNull ImageView imageView) {
             super(imageView);
         }
 
         @Override
         protected void onSuccess(Palette palette) {
-            Palette.Swatch vibrant = palette.getVibrantSwatch();
-            if (vibrant == null) {
+            Activity activity = getActivity();
+            if (activity == null) {
                 return;
             }
-
-            mPrimaryColor = vibrant.getRgb();
-            mPrimaryDarkColor = AppUtil.multiplyColor(mPrimaryColor, 0.8f);
-            mTitleTextColor = vibrant.getTitleTextColor();
-            AppUtil.setColorTheme(getActivity(), mToolbar, mPrimaryColor, mPrimaryDarkColor,
+            if (palette != null && palette.getVibrantSwatch() != null) {
+                Palette.Swatch vibrant = palette.getVibrantSwatch();
+                mPrimaryColor = vibrant.getRgb();
+                mPrimaryDarkColor = AppUtil.multiplyColor(mPrimaryColor, 0.8f);
+                mTitleTextColor = vibrant.getTitleTextColor();
+            } else {
+                mPrimaryColor = ContextCompat.getColor(activity, R.color.colorPrimary);
+                mPrimaryDarkColor = ContextCompat.getColor(activity, R.color.colorPrimaryDark);
+                mTitleTextColor = ContextCompat.getColor(activity, android.R.color.white);
+            }
+            AppUtil.setColorTheme(activity, mToolbar, mPrimaryColor, mPrimaryDarkColor,
                     mTitleTextColor, true);
 
-            Activity activity = getActivity();
             if (activity instanceof PaletteCallback) {
                 PaletteCallback callback = (PaletteCallback) activity;
                 callback.setPalette(mPrimaryColor, mPrimaryDarkColor, mTitleTextColor);
@@ -348,6 +424,13 @@ public class MovieDetailsFragment extends BaseFragment implements View.OnClickLi
 
         @Override
         public void onError() {}
+    }
+
+    private static abstract class AnimatorEndListener implements Animator.AnimatorListener {
+        @Override public void onAnimationStart(Animator animation) {}
+        @Override public abstract void onAnimationEnd(Animator animation);
+        @Override public void onAnimationCancel(Animator animation) {}
+        @Override public void onAnimationRepeat(Animator animation) {}
     }
 
     public interface PaletteCallback {
