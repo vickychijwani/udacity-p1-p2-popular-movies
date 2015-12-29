@@ -342,9 +342,9 @@ public class MovieDetailsFragment extends BaseFragment implements
     private void startEnterAnimation(int startDelay) {
         Interpolator interpolator = new DecelerateInterpolator();
         mBackdrop.setAlpha(0f);
-        mBackdrop.animate().setInterpolator(interpolator).alpha(1f).start();
+        mBackdrop.animate().setInterpolator(interpolator).alpha(1f).setListener(null).start();
         mPoster.setAlpha(0f);
-        mPoster.animate().setInterpolator(interpolator).alpha(1f).start();
+        mPoster.animate().setInterpolator(interpolator).alpha(1f).setListener(null).start();
         for (int i = 0; i < mEnterAnimationViews.size(); ++i) {
             final View v = mEnterAnimationViews.get(i);
             v.setAlpha(0f);
@@ -369,9 +369,9 @@ public class MovieDetailsFragment extends BaseFragment implements
             v.setTranslationY(0);
             ViewPropertyAnimator animator = v.animate();
             if (v == viewForAnimationNearlyEnded) {
-                animator.setListener(new AnimatorEndListener() {
+                animator.setListener(new AnimatorEndWithoutCancelListener() {
                     @Override
-                    public void onAnimationEnd(Animator animation) {
+                    public void onAnimationEndWithoutCancel() {
                         onAnimationNearlyEnded.run();
                     }
                 });
@@ -426,11 +426,26 @@ public class MovieDetailsFragment extends BaseFragment implements
         public void onError() {}
     }
 
-    private static abstract class AnimatorEndListener implements Animator.AnimatorListener {
-        @Override public void onAnimationStart(Animator animation) {}
-        @Override public abstract void onAnimationEnd(Animator animation);
-        @Override public void onAnimationCancel(Animator animation) {}
-        @Override public void onAnimationRepeat(Animator animation) {}
+    private static abstract class AnimatorEndWithoutCancelListener implements Animator.AnimatorListener {
+        boolean cancelled = false;
+
+        public abstract void onAnimationEndWithoutCancel();
+
+        @Override
+        public final void onAnimationEnd(Animator animation) {
+            if (! cancelled) {
+                onAnimationEndWithoutCancel();
+            }
+            cancelled = false;  // reset the flag
+        }
+
+        @Override
+        public final void onAnimationCancel(Animator animation) {
+            cancelled = true;
+        }
+
+        @Override public final void onAnimationStart(Animator animation) {}
+        @Override public final void onAnimationRepeat(Animator animation) {}
     }
 
     public interface PaletteCallback {
