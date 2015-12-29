@@ -11,9 +11,9 @@ import com.squareup.otto.Subscribe;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.realm.RealmList;
 import me.vickychijwani.popularmovies.entity.Movie;
@@ -43,7 +43,7 @@ public class Model {
     private final Database mDatabase;
     private final MovieDBApiService mApiService;
     private final String mApiKey;
-    private final Map<String, Call> mPendingCalls = new HashMap<>();
+    private final Map<String, Call> mPendingCalls = new ConcurrentHashMap<>();
 
     public Model() {
         mDatabase = new Database();
