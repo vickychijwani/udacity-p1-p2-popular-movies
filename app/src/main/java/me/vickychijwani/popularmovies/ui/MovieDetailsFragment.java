@@ -31,6 +31,7 @@ import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +39,9 @@ import java.util.Calendar;
 import java.util.List;
 
 import butterknife.Bind;
+import butterknife.BindBool;
 import butterknife.BindDrawable;
+import butterknife.BindInt;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import me.vickychijwani.popularmovies.BuildConfig;
@@ -58,7 +61,6 @@ public class MovieDetailsFragment extends BaseFragment implements
 
     private static final String TAG = "MovieDetailsFragment";
 
-
     @Bind(R.id.toolbar)             Toolbar mToolbar;
     @Bind(R.id.scroll_view)         ScrollView mScrollView;
     @Bind(R.id.scroll_view_layout)  ViewGroup mScrollViewLayout;
@@ -76,6 +78,11 @@ public class MovieDetailsFragment extends BaseFragment implements
     @Bind(R.id.reviews)             ViewGroup mReviewsView;
     @Bind(R.id.favorite)            FloatingActionButton mFavoriteBtn;
 
+    @BindInt(R.integer.anim_short_duration)         int mAnimShortDuration;
+    @BindInt(R.integer.anim_stagger_delay)          int mAnimStaggerDelay;
+    @BindInt(R.integer.anim_activity_start_delay)   int mAnimActivityStartDelay;
+    @BindBool(R.bool.anim_backdrop_animate_alpha)   boolean mAnimBackdropAnimateAlpha;
+
     @BindDrawable(R.drawable.star_outline)  Drawable mStarOutline;
     @BindDrawable(R.drawable.star)          Drawable mStarFilled;
 
@@ -86,6 +93,7 @@ public class MovieDetailsFragment extends BaseFragment implements
     private Movie mMovie;
     private List<View> mEnterAnimationViews;
     private List<View> mExitAnimationViews;
+    private boolean mInitialMovieLoaded = false;
 
     public MovieDetailsFragment() {}
 
@@ -135,7 +143,7 @@ public class MovieDetailsFragment extends BaseFragment implements
                     mScrollViewLayout.setLayoutParams(lp);
                 }
                 updateMovieDetails();
-                startEnterAnimation(100);
+                startEnterAnimation(mAnimActivityStartDelay);
                 return true;
             }
         });
@@ -207,27 +215,37 @@ public class MovieDetailsFragment extends BaseFragment implements
 
         mToolbar.setTitle(mMovie.getTitle());
 
-        mBackdrop.setAlpha(0f); // wait for enter animation
+        if (mAnimBackdropAnimateAlpha) {
+            mBackdrop.setAlpha(0f); // wait for enter animation
+        }
         mBackdrop.setTranslationY(0);
         int backdropWidth = mBackdrop.getWidth();   // this will be correct because this function is
                                                     // only called after layout is complete
         int backdropHeight = getResources().getDimensionPixelSize(R.dimen.details_backdrop_height);
-        picasso.load(TMDbUtil.buildBackdropUrl(mMovie.getBackdropPath(), backdropWidth))
+        RequestCreator backdropRequest = picasso
+                .load(TMDbUtil.buildBackdropUrl(mMovie.getBackdropPath(), backdropWidth))
                 .resize(backdropWidth, backdropHeight)
                 .centerCrop()
-                .transform(PaletteTransformation.instance())
-                .noFade()
-                .into(mBackdrop, new PaletteTransformationCallback(mBackdrop));
+                .transform(PaletteTransformation.instance());
+        if (! mAnimBackdropAnimateAlpha) {
+            backdropRequest.noFade();
+        }
+        backdropRequest.into(mBackdrop, new PaletteTransformationCallback(mBackdrop));
 
-        mPoster.setAlpha(0f); // wait for enter animation
+        if (mAnimBackdropAnimateAlpha) {
+            mPoster.setAlpha(0f); // wait for enter animation
+        }
         mPoster.setTranslationY(0);
         int posterWidth = getResources().getDimensionPixelSize(R.dimen.details_poster_width);
         int posterHeight = getResources().getDimensionPixelSize(R.dimen.details_poster_height);
-        picasso.load(TMDbUtil.buildPosterUrl(mMovie.getPosterPath(), posterWidth))
+        RequestCreator posterRequest = picasso
+                .load(TMDbUtil.buildPosterUrl(mMovie.getPosterPath(), posterWidth))
                 .resize(posterWidth, posterHeight)
-                .centerCrop()
-                .noFade()
-                .into(mPoster);
+                .centerCrop();
+        if (! mAnimBackdropAnimateAlpha) {
+            posterRequest.noFade();
+        }
+        posterRequest.into(mPoster);
 
         mTitle.setText(mMovie.getTitle());
 
@@ -243,7 +261,7 @@ public class MovieDetailsFragment extends BaseFragment implements
     public void onMovieLoadedEvent(MovieLoadedEvent event) {
         mMovie = event.movie;
 
-        updateFavoriteBtn();
+        updateFavoriteBtn(mInitialMovieLoaded ? 0 : mAnimActivityStartDelay);
         List<Review> reviews = mMovie.getReviews();
         List<Video> trailers = Movie.getTrailers(mMovie);
         if (BuildConfig.DEBUG) {
@@ -266,6 +284,8 @@ public class MovieDetailsFragment extends BaseFragment implements
         if (hasReviews) {
             addReviews(reviews);
         }
+
+        mInitialMovieLoaded = true;
     }
 
     public void setMovie(final Movie movie) {
@@ -283,7 +303,7 @@ public class MovieDetailsFragment extends BaseFragment implements
         });
     }
 
-    private void updateFavoriteBtn() {
+    private void updateFavoriteBtn(final int animStartDelay) {
         mFavoriteBtn.setImageDrawable(mMovie.isFavorite() ? mStarFilled : mStarOutline);
         if (mFavoriteBtn.getScaleX() == 0) {
             // credits for onPreDraw technique: http://frogermcs.github.io/Instagram-with-Material-Design-concept-part-2-Comments-transition/
@@ -293,10 +313,11 @@ public class MovieDetailsFragment extends BaseFragment implements
                     mFavoriteBtn.getViewTreeObserver().removeOnPreDrawListener(this);
                     mFavoriteBtn.animate()
                             .withLayer()
-                            .setInterpolator(new DecelerateInterpolator())
                             .scaleX(1f)
                             .scaleY(1f)
-                            .setStartDelay(100)
+                            .setInterpolator(new DecelerateInterpolator())
+                            .setStartDelay(animStartDelay)
+                            .setDuration(mAnimShortDuration)
                             .start();
                     return true;
                 }
@@ -341,20 +362,30 @@ public class MovieDetailsFragment extends BaseFragment implements
 
     private void startEnterAnimation(int startDelay) {
         Interpolator interpolator = new DecelerateInterpolator();
-        mBackdrop.setAlpha(0f);
-        mBackdrop.animate().setInterpolator(interpolator).alpha(1f).setListener(null).start();
-        mPoster.setAlpha(0f);
-        mPoster.animate().setInterpolator(interpolator).alpha(1f).setListener(null).start();
+        if (mAnimBackdropAnimateAlpha) {
+            View[] mFadeInViews = new View[] { mBackdrop, mPoster };
+            for (View v : mFadeInViews) {
+                v.setAlpha(0f);
+                v.animate()
+                        .withLayer()
+                        .alpha(1f)
+                        .setInterpolator(interpolator)
+                        .setDuration(mAnimShortDuration)
+                        .setListener(null)
+                        .start();
+            }
+        }
         for (int i = 0; i < mEnterAnimationViews.size(); ++i) {
             final View v = mEnterAnimationViews.get(i);
             v.setAlpha(0f);
             v.setTranslationY(75);
             v.animate()
                     .withLayer()
-                    .setInterpolator(interpolator)
                     .alpha(1.0f)
                     .translationY(0)
-                    .setStartDelay(startDelay + 75 * i)
+                    .setInterpolator(interpolator)
+                    .setStartDelay(startDelay + mAnimStaggerDelay * i)
+                    .setDuration(mAnimShortDuration)
                     .setListener(null)      // http://stackoverflow.com/a/22934588/504611
                     .start();
         }
@@ -378,17 +409,19 @@ public class MovieDetailsFragment extends BaseFragment implements
             }
             animator
                     .withLayer()
-                    .setInterpolator(interpolator)
                     .alpha(0.0f)
                     .translationY(-75)
-                    .setStartDelay(75 * i)
+                    .setInterpolator(interpolator)
+                    .setStartDelay(mAnimStaggerDelay * i)
+                    .setDuration(mAnimShortDuration)
                     .start();
         }
         mFavoriteBtn.animate()
                 .withLayer()
-                .setInterpolator(interpolator)
                 .scaleX(0f)
                 .scaleY(0f)
+                .setInterpolator(interpolator)
+                .setDuration(mAnimShortDuration)
                 .start();
     }
 

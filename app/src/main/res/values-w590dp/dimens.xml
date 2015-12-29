@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- animation -->
+    <integer name="anim_short_duration">150</integer>
+    <integer name="anim_stagger_delay">75</integer>
+    <integer name="anim_activity_start_delay">0</integer>
+    <bool name="anim_backdrop_animate_alpha">true</bool>
+</resources>

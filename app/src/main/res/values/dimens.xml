@@ -16,6 +16,12 @@
     <dimen name="video_height">180dp</dimen>
     <dimen name="video_width">240dp</dimen> <!-- height * aspect_ratio -->
 
+    <!-- animation -->
+    <integer name="anim_short_duration">200</integer>
+    <integer name="anim_stagger_delay">75</integer>
+    <integer name="anim_activity_start_delay">300</integer>
+    <bool name="anim_backdrop_animate_alpha">false</bool>
+
     <!-- misc dimensions -->
     <item name="body_text_line_spacing" format="float" type="dimen">1.15</item>
 
