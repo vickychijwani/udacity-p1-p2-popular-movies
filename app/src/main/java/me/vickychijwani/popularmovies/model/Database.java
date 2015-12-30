@@ -19,16 +19,18 @@ import me.vickychijwani.popularmovies.util.AppUtil;
 
 class Database {
 
-    private static final String TAG = "Database";
+    private static final String TAG = Database.class.getSimpleName();
 
     public void loadFavoriteMovies(final ReadCallback<List<Movie>> callback) {
-        final RealmResults<Movie> results = getRealm().where(Movie.class)
-                .equalTo("isFavorite", true)
-                .findAllAsync();
-        results.addChangeListener(new RealmChangeListener() {
+        readAllAsync(new ReadAction<Movie>() {
+            @NonNull
             @Override
-            public void onChange() {
-                results.removeChangeListener(this);
+            public RealmQuery<Movie> getQuery(@NonNull Realm realm) {
+                return realm.where(Movie.class).equalTo("isFavorite", true);
+            }
+
+            @Override
+            public void onResults(RealmResults<Movie> results) {
                 List<Movie> favorites = new ArrayList<>(results.size());
                 for (Movie movie : results) {
                     favorites.add(movie);
@@ -38,8 +40,29 @@ class Database {
         });
     }
 
-    public void loadMovie(int id, ReadCallback<Movie> callback) {
-        loadById(new StringOrInt(id), callback, Movie.class);
+    public void loadMovie(final int id, final ReadCallback<Movie> callback) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "[READ ] Load Movie with id = " + id);
+        }
+        readAllAsync(new ReadAction<Movie>() {
+            @NonNull
+            @Override
+            public RealmQuery<Movie> getQuery(@NonNull Realm realm) {
+                return realm.where(Movie.class).equalTo("id", id);
+            }
+
+            @Override
+            public void onResults(RealmResults<Movie> results) {
+                if (!results.isEmpty()) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(TAG, "[READ ] Success: Movie with id = " + id);
+                    }
+                    callback.done(AppUtil.copy(results.first(), Movie.class));
+                } else {
+                    callback.failed(new RuntimeException("No Movie found with id = " + id));
+                }
+            }
+        });
     }
 
     @UiThread
@@ -49,9 +72,9 @@ class Database {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Creating/updating " + object.getClass().getSimpleName());
         }
-        Realm realm = getRealm();
-        realm.executeTransaction(new Realm.Transaction() {
-            @Override @WorkerThread
+        write(new Realm.Transaction() {
+            @Override
+            @WorkerThread
             public void execute(Realm realm) {
                 realm.copyToRealmOrUpdate(object);
             }
@@ -64,47 +87,51 @@ class Database {
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "Creating/updating " + objects.getClass().getSimpleName());
         }
-        Realm realm = getRealm();
-        realm.executeTransaction(new Realm.Transaction() {
-            @Override @WorkerThread
+        write(new Realm.Transaction() {
+            @Override
+            @WorkerThread
             public void execute(Realm realm) {
                 realm.copyToRealmOrUpdate(objects);
             }
         }, callback);
     }
 
-    private <T extends RealmObject> void loadById(final StringOrInt idStringOrInt,
-                                                  final ReadCallback<T> callback,
-                                                  final Class<T> clazz) {
-        if (BuildConfig.DEBUG) {
-            Log.d(TAG, "[READ ] Load " + clazz.getSimpleName() + " with id = " + idStringOrInt.toString());
-        }
-        RealmQuery<T> query = getRealm().where(clazz);
-        if (idStringOrInt.hasString()) {
-            query.equalTo("id", idStringOrInt.string);
-        } else {
-            query.equalTo("id", idStringOrInt.integer);
-        }
-        final RealmResults<T> result = query.findAllAsync();
-        result.addChangeListener(new RealmChangeListener() {
-            @Override
-            public void onChange() {
-                result.removeChangeListener(this);
-                if (! result.isEmpty()) {
-                    if (BuildConfig.DEBUG) {
-                        Log.d(TAG, "[READ ] Success: " + clazz.getSimpleName() + " with id = " + idStringOrInt.toString());
-                    }
-                    callback.done(AppUtil.copy(result.first(), clazz));
-                } else {
-                    callback.failed(new RuntimeException("No " + clazz.getSimpleName() +
-                            " found with id = " + idStringOrInt.toString()));
-                }
+    private void write(@NonNull final Realm.Transaction transaction,
+                       @NonNull final WriteCallback writeCallback) {
+        Realm realm = null;
+        try {
+            realm = Realm.getDefaultInstance();
+            realm.executeTransaction(transaction, writeCallback);
+        } finally {
+            if (realm != null) {
+                realm.close();
             }
-        });
+        }
     }
 
-    private Realm getRealm() {
-        return Realm.getDefaultInstance();
+    private <T extends RealmObject> void readAllAsync(@NonNull final ReadAction<T> readAction) {
+        Realm realm = null;
+        try {
+            realm = Realm.getDefaultInstance();
+            RealmQuery<T> query = readAction.getQuery(realm);
+            final RealmResults<T> results = query.findAllAsync();
+            results.addChangeListener(new RealmChangeListener() {
+                @Override
+                public void onChange() {
+                    results.removeChangeListener(this);
+                    readAction.onResults(results);
+                }
+            });
+        } finally {
+            if (realm != null) {
+                realm.close();
+            }
+        }
+    }
+
+    private interface ReadAction<T extends RealmObject> {
+        @NonNull RealmQuery<T> getQuery(@NonNull Realm realm);
+        void onResults(RealmResults<T> results);
     }
 
     public static abstract class ReadCallback<T> {
@@ -133,34 +160,6 @@ class Database {
         public void onError(Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));
             failed(e);
-        }
-    }
-
-    private static class StringOrInt {
-        public final String string;
-        public final Integer integer;
-
-        public StringOrInt(String string) {
-            this.string = string;
-            this.integer = null;
-        }
-
-        public StringOrInt(int integer) {
-            this.string = null;
-            this.integer = integer;
-        }
-
-        public boolean hasString() {
-            return this.string != null;
-        }
-
-        public boolean hasInt() {
-            return this.integer != null;
-        }
-
-        @Override
-        public String toString() {
-            return hasString() ? this.string : String.valueOf(this.integer);
         }
     }
 

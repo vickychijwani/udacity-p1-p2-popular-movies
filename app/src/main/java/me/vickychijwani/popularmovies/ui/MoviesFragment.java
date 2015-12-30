@@ -180,9 +180,9 @@ public class MoviesFragment extends BaseFragment implements
 
     private void showMovies(@NonNull List<Movie> movies) {
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, "Loaded " + movies.size() + " movies:");
+            Log.v(TAG, "Loaded " + movies.size() + " movies:");
             for (Movie movie : movies) {
-                Log.d(TAG, movie.getTitle() + " (poster: " + movie.getPosterPath() + ")");
+                Log.v(TAG, movie.getTitle() + " (poster: " + movie.getPosterPath() + ")");
             }
         }
         mMovies.clear();

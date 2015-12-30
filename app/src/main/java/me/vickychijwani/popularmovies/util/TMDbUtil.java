@@ -54,7 +54,7 @@ public class TMDbUtil {
 
     private static <T extends TMDbImageWidth> String buildImageUrl(String imagePath, T tmdbImageWidth) {
         if (BuildConfig.DEBUG) {
-            Log.d("Picasso", "Loading image of width " + tmdbImageWidth.getMaxWidth() + "px");
+            Log.v("Picasso", "Loading image of width " + tmdbImageWidth.getMaxWidth() + "px");
         }
         String relativePath = tmdbImageWidth.getWidthString() + "/" + imagePath;
         return Uri.withAppendedPath(TMDB_IMAGE_BASE_URI, relativePath).toString();

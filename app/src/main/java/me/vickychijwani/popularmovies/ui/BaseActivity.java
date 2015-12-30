@@ -8,12 +8,15 @@ import android.view.MenuItem;
 
 import com.squareup.otto.Bus;
 
+import io.realm.Realm;
 import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.event.DataBusProvider;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
     private static final String LIFECYCLE = "Lifecycle";
+
+    private Realm mRealmReference = null;
 
     protected Bus getDataBus() {
         return DataBusProvider.getBus();
@@ -23,6 +26,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         logLifecycleMethod();
+        // hold reference to the Realm to increase reference count to 1
+        mRealmReference = Realm.getDefaultInstance();
     }
 
     @Override
@@ -55,11 +60,16 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         logLifecycleMethod();
+        // Let go of Realm reference. If some other Activity has run, that will
+        // hold it. If no Activities are running, then decrementing ref count to
+        // 0 is a great idea in order to close the Realm correctly.
+        mRealmReference.close();
+        mRealmReference = null;
     }
 
     private void logLifecycleMethod() {
         if (BuildConfig.DEBUG) {
-            Log.i(LIFECYCLE, getMethodName(this));
+            Log.d(LIFECYCLE, getMethodName(this));
         }
     }
 

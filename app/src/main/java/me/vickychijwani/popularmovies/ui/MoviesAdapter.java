@@ -61,7 +61,7 @@ final class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHo
                 .centerCrop()
                 .into(holder.mPoster);
         if (BuildConfig.DEBUG) {
-            Log.d("Picasso", "Will resize image to " + mPosterWidth + "x" + mPosterHeight);
+            Log.v("Picasso", "Will resize image to " + mPosterWidth + "x" + mPosterHeight);
         }
     }
 
