@@ -9,6 +9,7 @@
 
     <!-- specific view dimensions and spacing -->
     <dimen name="fab_size">56dp</dimen>
+    <dimen name="desired_column_width">150dp</dimen>
     <dimen name="details_backdrop_height">200dp</dimen>
     <dimen name="details_poster_width">100dp</dimen>
     <dimen name="details_poster_height">150dp</dimen>

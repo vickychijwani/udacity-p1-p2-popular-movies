@@ -24,6 +24,7 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.BindColor;
+import butterknife.BindDimen;
 import butterknife.ButterKnife;
 import me.vickychijwani.popularmovies.BuildConfig;
 import me.vickychijwani.popularmovies.R;
@@ -38,7 +39,6 @@ public class MoviesFragment extends BaseFragment implements
         SwipeRefreshLayout.OnRefreshListener, Toolbar.OnMenuItemClickListener {
 
     private static final String TAG = "MoviesFragment";
-    private static final int DESIRED_GRID_COLUMN_WIDTH_DP = 300;
 
     private static final String KEY_MOVIES = "movies";
     private static final String KEY_SORT_ORDER = MovieResults.SortCriteria.class.getSimpleName();
@@ -47,7 +47,8 @@ public class MoviesFragment extends BaseFragment implements
     @Bind(R.id.movies_list)             RecyclerView mMoviesListView;
     @Bind(R.id.swipe_refresh_layout)    SwipeRefreshLayout mSwipeRefreshLayout;
 
-    @BindColor(android.R.color.white)   int mCurrentTitleTextColor;
+    @BindColor(android.R.color.white)           int mCurrentTitleTextColor;
+    @BindDimen(R.dimen.desired_column_width)    int desiredColumnWidth;
 
     private MoviesAdapter mMoviesAdapter;
     private ArrayList<Movie> mMovies = new ArrayList<>();
@@ -81,7 +82,7 @@ public class MoviesFragment extends BaseFragment implements
                 view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 // compute optimal number of columns based on available width
                 int gridWidth = mMoviesListView.getWidth();
-                int optimalColumnCount = Math.round(gridWidth / DESIRED_GRID_COLUMN_WIDTH_DP);
+                int optimalColumnCount = Math.max(Math.round((1f*gridWidth) / desiredColumnWidth), 1);
                 int actualPosterViewWidth = gridWidth / optimalColumnCount;
 
                 RecyclerView.LayoutManager layoutManager = new GridLayoutManager(activity, optimalColumnCount);

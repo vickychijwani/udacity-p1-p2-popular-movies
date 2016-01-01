@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="grid_width">150dp</dimen>
+
     <!-- animation -->
     <integer name="anim_short_duration">150</integer>
     <integer name="anim_stagger_delay">75</integer>

@@ -10,7 +10,7 @@
     <fragment
         android:id="@+id/movies_fragment"
         android:name="me.vickychijwani.popularmovies.ui.MoviesFragment"
-        android:layout_width="150dp"
+        android:layout_width="@dimen/grid_width"
         android:layout_height="match_parent"
         android:layout_weight="0"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
