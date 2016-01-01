@@ -33,7 +33,7 @@ class Database {
             public void onResults(RealmResults<Movie> results) {
                 List<Movie> favorites = new ArrayList<>(results.size());
                 for (Movie movie : results) {
-                    favorites.add(movie);
+                    favorites.add(AppUtil.copy(movie, Movie.class));
                 }
                 callback.done(favorites);
             }
