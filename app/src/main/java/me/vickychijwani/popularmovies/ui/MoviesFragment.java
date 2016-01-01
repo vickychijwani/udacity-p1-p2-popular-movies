@@ -43,6 +43,9 @@ public class MoviesFragment extends BaseFragment implements
     private static final String KEY_MOVIES = "movies";
     private static final String KEY_SORT_ORDER = MovieResults.SortCriteria.class.getSimpleName();
 
+    public static final MovieResults.SortCriteria DEFAULT_SORT_CRITERIA =
+            MovieResults.SortCriteria.POPULARITY;
+
     @Bind(R.id.toolbar)                 Toolbar mToolbar;
     @Bind(R.id.movies_list)             RecyclerView mMoviesListView;
     @Bind(R.id.swipe_refresh_layout)    SwipeRefreshLayout mSwipeRefreshLayout;
@@ -52,7 +55,7 @@ public class MoviesFragment extends BaseFragment implements
 
     private MoviesAdapter mMoviesAdapter;
     private ArrayList<Movie> mMovies = new ArrayList<>();
-    private MovieResults.SortCriteria mCurrentSortCriteria = MovieResults.SortCriteria.POPULARITY;
+    private MovieResults.SortCriteria mCurrentSortCriteria = DEFAULT_SORT_CRITERIA;
 
     public MoviesFragment() {}
 
@@ -175,6 +178,9 @@ public class MoviesFragment extends BaseFragment implements
 
     @Subscribe
     public void onMoviesLoadedEvent(MoviesLoadedEvent event) {
+        if (mCurrentSortCriteria == event.sortCriteria && !mMovies.isEmpty()) {
+            return;
+        }
         mCurrentSortCriteria = event.sortCriteria;
         showMovies(event.movies);
     }
