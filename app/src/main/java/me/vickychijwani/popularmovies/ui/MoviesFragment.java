@@ -117,7 +117,7 @@ public class MoviesFragment extends BaseFragment implements
     @Override
     public void onStart() {
         super.onStart();
-        if (mMovies.isEmpty()) {
+        if (mMovies.isEmpty() || mCurrentSortCriteria == MovieResults.SortCriteria.FAVORITES) {
             onRefresh();
         }
     }
