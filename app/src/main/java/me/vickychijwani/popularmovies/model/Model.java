@@ -26,6 +26,7 @@ import me.vickychijwani.popularmovies.event.events.CancelAllEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMovieEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
 import me.vickychijwani.popularmovies.event.events.MovieLoadedEvent;
+import me.vickychijwani.popularmovies.event.events.MovieUpdatedEvent;
 import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
 import me.vickychijwani.popularmovies.event.events.UpdateMovieEvent;
 import me.vickychijwani.popularmovies.util.AppUtil;
@@ -151,6 +152,7 @@ public class Model {
                 public void done() {
                     // send over a copy of the updated movie
                     getDataBus().post(new MovieLoadedEvent(movieCopy));
+                    getDataBus().post(new MovieUpdatedEvent(movieCopy));
                 }
             });
         }

@@ -32,6 +32,7 @@ import me.vickychijwani.popularmovies.entity.Movie;
 import me.vickychijwani.popularmovies.entity.MovieResults;
 import me.vickychijwani.popularmovies.event.events.ApiErrorEvent;
 import me.vickychijwani.popularmovies.event.events.LoadMoviesEvent;
+import me.vickychijwani.popularmovies.event.events.MovieUpdatedEvent;
 import me.vickychijwani.popularmovies.event.events.MoviesLoadedEvent;
 import me.vickychijwani.popularmovies.util.AppUtil;
 
@@ -56,6 +57,7 @@ public class MoviesFragment extends BaseFragment implements
     private MoviesAdapter mMoviesAdapter;
     private ArrayList<Movie> mMovies = new ArrayList<>();
     private MovieResults.SortCriteria mCurrentSortCriteria = DEFAULT_SORT_CRITERIA;
+    private boolean mDetailsUpdatePending = false;
 
     public MoviesFragment() {}
 
@@ -178,11 +180,24 @@ public class MoviesFragment extends BaseFragment implements
 
     @Subscribe
     public void onMoviesLoadedEvent(MoviesLoadedEvent event) {
-        if (mCurrentSortCriteria == event.sortCriteria && !mMovies.isEmpty()) {
-            return;
-        }
         mCurrentSortCriteria = event.sortCriteria;
         showMovies(event.movies);
+        if (mDetailsUpdatePending && mCurrentSortCriteria == MovieResults.SortCriteria.FAVORITES) {
+            Movie firstMovie = mMovies.isEmpty() ? null : mMovies.get(0);
+            ((MoviesActivity) getActivity()).showMovieDetails(firstMovie);
+            mDetailsUpdatePending = false;
+        }
+    }
+
+    @Subscribe
+    public void onMovieUpdatedEvent(MovieUpdatedEvent event) {
+        // if a movie was updated and we're currently in the favorites list, that means
+        // the two-pane layout is visible and the favorites list itself needs to be updated
+        // also the current movie was un-favorited, so tell the activity to update the details pane
+        if (mCurrentSortCriteria == MovieResults.SortCriteria.FAVORITES) {
+            getDataBus().post(new LoadMoviesEvent(mCurrentSortCriteria));
+            mDetailsUpdatePending = true;
+        }
     }
 
     private void showMovies(@NonNull List<Movie> movies) {

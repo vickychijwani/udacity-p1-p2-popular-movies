@@ -73,22 +73,25 @@ public class MoviesActivity extends BaseActivity implements
     }
 
     @Override
-    public void onMovieClick(View movieView, Movie movie) {
+    public void onMovieClick(@Nullable View movieView, Movie movie) {
         if (! mTwoPane) {
             Intent intent = new Intent(this, MovieDetailsActivity.class);
             intent.putExtra(BundleKeys.MOVIE, Movie.toParcelable(movie));
-            ActivityOptions opts = ActivityOptions.makeScaleUpAnimation(movieView, 0, 0,
-                    movieView.getWidth(), movieView.getHeight());
-            startActivity(intent, opts.toBundle());
+            if (movieView != null) {
+                ActivityOptions opts = ActivityOptions.makeScaleUpAnimation(movieView, 0, 0,
+                        movieView.getWidth(), movieView.getHeight());
+                startActivity(intent, opts.toBundle());
+            } else {
+                startActivity(intent);
+            }
         } else {
             showMovieDetails(movie);
         }
     }
 
-    private void showMovieDetails(@Nullable Movie movie) {
+    public void showMovieDetails(@Nullable Movie movie) {
         if (! mTwoPane) {
-            throw new UnsupportedOperationException("This is only supposed to be called in a " +
-                    "2-pane layout!");
+            return;
         }
         if (movie == null) {
             return;
