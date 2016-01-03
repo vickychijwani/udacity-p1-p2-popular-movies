@@ -109,11 +109,13 @@ public class Model {
 
     @Subscribe
     public void onLoadMovieEvent(final LoadMovieEvent event) {
+        // load cached movie details from local database
         mDatabase.loadMovie(event.id, new Database.ReadCallback<Movie>() {
             @Override
             public void done(final Movie localMovie) {
                 getDataBus().post(new MovieLoadedEvent(localMovie));
                 if (localMovie.getReviews().isEmpty() && localMovie.getVideos().isEmpty()) {
+                    // fetch updated movie details from TMDb, in the background
                     fetchMovie(localMovie, event);
                 }
             }
@@ -129,6 +131,7 @@ public class Model {
                 mDatabase.createOrUpdateEntity(fetchedMovie, new Database.WriteCallback() {
                     @Override
                     public void done() {
+                        // send over updated movie details
                         readMovieFromDb(event.id);
                     }
                 });
